@@ -1,0 +1,27 @@
+$(srcdir)/pline.o:				\
+  $(arch_hdrdir)/ruby/config.h			\
+  $(hdrdir)/ruby/defines.h			\
+  $(hdrdir)/ruby/intern.h			\
+  $(hdrdir)/ruby/missing.h			\
+  $(hdrdir)/ruby/ruby.h				\
+  $(hdrdir)/ruby/st.h				\
+  $(srcdir)/ruby_source/1.9.3/eval_intern.h	\
+  $(srcdir)/ruby_source/1.9.3/iseq.h		\
+  $(srcdir)/ruby_source/1.9.3/method.h		\
+  $(srcdir)/ruby_source/1.9.3/node.h		\
+  $(srcdir)/ruby_source/1.9.3/thread_pthread.h	\
+  $(srcdir)/ruby_source/1.9.3/thread_win32.h	\
+  $(srcdir)/ruby_source/1.9.3/vm_core.h		\
+  $(srcdir)/ruby_source/1.9.3/vm_exec.h		\
+  $(srcdir)/ruby_source/1.9.3/vm_insnhelper.c	\
+  $(srcdir)/ruby_source/1.9.3/vm_insnhelper.h	\
+  $(srcdir)/ruby_source/1.9.3/vm_opts.h		\
+  $(srcdir)/ruby_source/1.9.3/insns_info.inc	\
+  $(srcdir)/ruby_source/1.9.3/insns.inc		\
+  $(srcdir)/ruby_source/1.9.3/constant.h	\
+  $(srcdir)/ruby_source/1.9.3/atomic.h		\
+  $(srcdir)/ruby_source/1.9.3/internal.h	\
+  $(srcdir)/ruby_source/1.9.3/manual_update.h	\
+  $(srcdir)/extconf.h				\
+  $(srcdir)/pline.c
+

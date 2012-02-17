@@ -1,0 +1,8 @@
+*.o
+*.so
+*.swp
+*.swo
+*.gem
+Makefile
+/tmp
+/install.rb
