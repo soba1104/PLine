@@ -41,7 +41,6 @@ static VALUE mPLine, cSourceInfo, cMethodInfo;
 #include "sinfo.c"
 #include "minfo.c"
 #include "profile.c"
-#include "summarize.c"
 
 VALUE Init_pline()
 {
@@ -49,6 +48,5 @@ VALUE Init_pline()
   pline_sinfo_init();
   pline_minfo_init();
   pline_profile_init();
-  pline_summarize_init();
 }
 
