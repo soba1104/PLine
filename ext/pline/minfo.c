@@ -58,7 +58,7 @@ static void check_line_information(VALUE line)
 static VALUE minfo_spath_from_iseq(VALUE iseqval)
 {
   rb_iseq_t *iseq = DATA_PTR(iseqval);
-  VALUE spath = iseq->filepath;
+  VALUE spath = iseq->filename;
   VALUE valid = rb_funcall(rb_cFile, rb_intern("exist?"), 1, spath);
 
   if (!RTEST(valid)) {
@@ -87,7 +87,7 @@ static VALUE minfo_eline_from_iseq(VALUE iseqval)
   check_line_information(eline);
 
   for (i = 0; i < iseq->insn_info_size; i++) {
-    VALUE l = LONG2FIX(iseq->insn_info_table[i].line_no + 1);
+    VALUE l = LONG2FIX(iseq->insn_info_table[i].line_no);
     if (l > eline) {
       eline = l;
     }

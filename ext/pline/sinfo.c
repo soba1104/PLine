@@ -44,7 +44,7 @@ static VALUE sinfo_m_lines(VALUE self)
   int i;
 
   for (i = 0; i < s->size; i++) {
-    RARRAY_PTR(lines)[i] = LL2NUM(s->vals[i]);
+    rb_ary_push(lines, LL2NUM(s->vals[i]));
   }
 
   return lines;

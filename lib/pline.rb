@@ -35,13 +35,23 @@ module PLine
   end
 
   at_exit(&lambda{
-    result = summarize()
-    return if result.empty?
-    STDERR.puts(result.join("\n"))
-
+    files = {}
     MethodInfo.each do |m|
       bug() unless m.is_a?(MethodInfo)
-      puts m.description
+      minfos = files[m.spath] ||= []
+      minfos << m
+    end
+    files.each do |spath, minfos|
+      sinfo = SourceInfo.find(spath)
+      source = File.readlines(spath)
+      minfos.each do |m|
+        puts("========== #{m.description} #{m.sline} ==========")
+        sinfo.lines[(m.sline - 1)..(m.eline - 1)].each_with_index do |t, idx|
+          line = m.sline + idx
+          print(sprintf("%5d: %12d: %s", line, t, source[line - 1]))
+        end
+        puts
+      end
     end
   })
 end
