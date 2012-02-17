@@ -59,6 +59,19 @@ static VALUE sinfo_find(char *s)
   }
 }
 
+static VALUE sinfo_find_force(char *s)
+{
+  VALUE sinfo = sinfo_find(s);
+
+  if (!RTEST(sinfo)) {
+    sinfo = rb_funcall(cSourceInfo, rb_intern("new"), 0);
+    rb_gc_register_mark_object(sinfo);
+    st_insert(pline_table, (st_data_t)s, (st_data_t)sinfo);
+  }
+
+  return sinfo;
+}
+
 static VALUE sinfo_s_find(VALUE self, VALUE path)
 {
   VALUE sinfo;
