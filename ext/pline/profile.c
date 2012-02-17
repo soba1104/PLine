@@ -47,7 +47,7 @@ static void pline_callback(rb_event_flag_t event, VALUE arg, VALUE self, ID id, 
   if (!success) return;
 
   sinfo = sinfo_find_force(srcfile);
-  sline_measure(sinfo, line);
+  sinfo_measure(sinfo, line);
 
   return;
 }
