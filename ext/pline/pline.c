@@ -36,7 +36,6 @@
 #define NOVALUE -1
 
 static VALUE mPLine, cSourceInfo, cMethodInfo;
-static st_table *pline_table;
 
 #include "iseq.c"
 #include "sinfo.c"

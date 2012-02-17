@@ -98,6 +98,5 @@ static VALUE pline_m_profile(VALUE self, VALUE klass, VALUE mid, VALUE singleton
 static void pline_profile_init(void)
 {
   rb_define_singleton_method(mPLine, "profile", pline_m_profile, 3);
-  pline_table = st_init_strtable();
 }
 

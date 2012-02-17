@@ -1,3 +1,5 @@
+static st_table *pline_table;
+
 typedef long long int pline_time_t;
 typedef struct pline_src_info {
   pline_time_t *vals;
@@ -124,5 +126,6 @@ static void pline_sinfo_init(void)
   rb_define_singleton_method(cSourceInfo, "find", sinfo_s_find, 1);
   rb_define_method(cSourceInfo, "lines", sinfo_m_lines, 0);
   rb_define_alloc_func(cSourceInfo, sinfo_s_alloc);
+  pline_table = st_init_strtable();
 }
 
