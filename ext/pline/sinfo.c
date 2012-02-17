@@ -48,6 +48,28 @@ static VALUE sinfo_m_lines(VALUE self)
   return lines;
 }
 
+static VALUE sinfo_find(char *s)
+{
+  VALUE sinfo;
+
+  if (st_lookup(pline_table, (st_data_t)s, (st_data_t*)&sinfo)) {
+    return sinfo;
+  } else {
+    return Qnil;
+  }
+}
+
+static VALUE sinfo_s_find(VALUE self, VALUE path)
+{
+  VALUE sinfo;
+
+  if (TYPE(path) != T_STRING) {
+    rb_raise(rb_eArgError, "invalid argument");
+  }
+
+  return sinfo_find(RSTRING_PTR(path));
+}
+
 static void pline_sinfo_init(void)
 {
   cSourceInfo = rb_define_class_under(mPLine, "SourceInfo", rb_cObject);

@@ -46,14 +46,18 @@ static void pline_callback(rb_event_flag_t event, VALUE arg, VALUE self, ID id, 
   int i;
   struct timespec tp;
   pline_time_t t;
+  VALUE iv;
 
   if (!success) return;
 
-  if (!st_lookup(pline_table, (st_data_t)srcfile, (st_data_t*)&info)) {
+  iv = sinfo_find(srcfile);
+  if (RTEST(iv)) {
+    info = DATA_PTR(iv);
+  } else {
     VALUE iv = rb_funcall(cSourceInfo, rb_intern("new"), 0);
     rb_gc_register_mark_object(iv);
+    st_insert(pline_table, (st_data_t)srcfile, (st_data_t)iv);
     info = DATA_PTR(iv);
-    st_insert(pline_table, (st_data_t)srcfile, (st_data_t)info);
   }
 
   if (info->size < line) {

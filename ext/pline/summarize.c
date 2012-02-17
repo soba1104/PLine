@@ -1,8 +1,9 @@
 static int pline_summarize_i(st_data_t key, st_data_t value, st_data_t arg)
 {
   VALUE result = (VALUE)arg;
+  VALUE iv = (VALUE)value;
   const char *srcfile = (const char *)key;
-  pline_src_info_t *info = (pline_src_info_t *)value;
+  pline_src_info_t *info = DATA_PTR(iv);
   VALUE src = rb_funcall(mPLine, rb_intern("source"), 1, rb_str_new2(srcfile));
   long i;
 
