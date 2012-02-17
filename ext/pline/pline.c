@@ -187,8 +187,6 @@ VALUE Init_pline()
   mPLine = rb_define_module("PLine");
   rb_define_singleton_method(mPLine, "profile", pline_m_profile, 3);
   pline_table = st_init_strtable();
-  minfo_table = rb_ary_new();
-  rb_gc_register_mark_object(minfo_table);
 
   pline_minfo_init();
   pline_summarize_init();

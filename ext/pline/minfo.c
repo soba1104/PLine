@@ -136,8 +136,10 @@ static VALUE minfo_m_eline(VALUE self)
 
 static void pline_minfo_init(void)
 {
-  cMethodInfo = rb_define_class_under(mPLine, "MethodInfo", rb_cObject);
+  minfo_table = rb_ary_new();
+  rb_gc_register_mark_object(minfo_table);
 
+  cMethodInfo = rb_define_class_under(mPLine, "MethodInfo", rb_cObject);
   rb_define_method(cMethodInfo, "spath", minfo_m_spath, 0);
   rb_define_method(cMethodInfo, "sline", minfo_m_sline, 0);
   rb_define_method(cMethodInfo, "eline", minfo_m_eline, 0);
