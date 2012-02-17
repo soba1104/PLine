@@ -1,14 +1,9 @@
 #include "pline.h"
+#include "minfo.c"
 
 static VALUE mPLine, cMethodInfo;
 static st_table *pline_table;
-
-typedef long long int pline_time_t;
-typedef struct pline_src_info {
-  pline_time_t *vals;
-  pline_time_t *starts;
-  long size;
-} pline_src_info_t;
+static VALUE mtable;
 
 static rb_iseq_t *pline_find_iseq(VALUE obj, VALUE mid, VALUE singleton_p)
 {
@@ -116,16 +111,16 @@ static void pline_inject(rb_iseq_t *iseq)
       }
       break;
     case BIN(putiseq):
-      child = op0[0];
+      child = (rb_iseq_t *)op0[0];
       break;
     case BIN(defineclass):
-      child = op0[1];
+      child = (rb_iseq_t *)op0[1];
       break;
     case BIN(send):
-      child = op0[2];
+      child = (rb_iseq_t *)op0[2];
       break;
     case BIN(invokesuper):
-      child = op0[1];
+      child = (rb_iseq_t *)op0[1];
       break;
     }
     if (child) {
@@ -250,6 +245,32 @@ static void pline_hook_line(int remove)
   return;
 }
 
+static void pline_add_method(VALUE klass, VALUE mid, rb_iseq_t *iseq)
+{
+  VALUE spath = iseq->filepath;
+  VALUE sline = iseq->line_no;
+  VALUE eline = iseq->line_no;
+  VALUE valid = rb_funcall(rb_cFile, rb_intern("exist?"), 1, spath);
+  VALUE minfo;
+  unsigned int i;
+
+  if (!RTEST(valid) || rb_class_of(sline) != rb_cFixnum || FIX2LONG(sline) < 0) {
+    rb_raise(rb_eArgError, "unexpected source information");
+  }
+
+  for (i = 0; i < iseq->insn_info_size; i++) {
+    VALUE l = LONG2FIX(iseq->insn_info_table[i].line_no);
+    if (l > eline) {
+      eline = l;
+    }
+  }
+
+  minfo = rb_funcall(cMethodInfo, rb_intern("new"), 3, spath, sline, eline);
+  rb_ary_push(mtable, minfo);
+
+  return;
+}
+
 static VALUE pline_m_profile(VALUE self, VALUE klass, VALUE mid, VALUE singleton_p)
 {
   rb_iseq_t *iseq;
@@ -263,6 +284,7 @@ static VALUE pline_m_profile(VALUE self, VALUE klass, VALUE mid, VALUE singleton
   }
 
   iseq = pline_find_iseq(klass, mid, singleton_p);
+  pline_add_method(klass, mid, iseq);
 
   pline_inject(iseq);
   pline_hook_line(0);
@@ -290,6 +312,8 @@ static int pline_summarize_i(st_data_t key, st_data_t value, st_data_t arg)
     rb_ary_push(result, rb_funcall(mPLine, rb_intern("summarize_line"), 3, src, line, time));
   }
   rb_ary_push(result, rb_str_new2(""));
+
+  return ST_CONTINUE;
 }
 
 static VALUE pline_m_summarize(VALUE self)
@@ -306,5 +330,7 @@ VALUE Init_pline()
   rb_define_singleton_method(mPLine, "summarize", pline_m_summarize, 0);
   pline_table = st_init_strtable();
   cMethodInfo = pline_method_info_init(mPLine);
+  mtable = rb_ary_new();
+  rb_gc_register_mark_object(mtable);
 }
 

@@ -1,5 +1,3 @@
-#include "pline.h"
-
 typedef struct pline_method_info {
   VALUE spath;
   VALUE sline;
@@ -78,9 +76,11 @@ VALUE pline_method_info_init(VALUE mPLine)
 {
   VALUE cMethodInfo = rb_define_class_under(mPLine, "MethodInfo", rb_cObject);
 
-  rb_define_singleton_method(cMethodInfo, "spath", minfo_m_spath, 0);
-  rb_define_singleton_method(cMethodInfo, "sline", minfo_m_sline, 0);
-  rb_define_singleton_method(cMethodInfo, "eline", minfo_m_eline, 0);
+  rb_define_method(cMethodInfo, "spath", minfo_m_spath, 0);
+  rb_define_method(cMethodInfo, "sline", minfo_m_sline, 0);
+  rb_define_method(cMethodInfo, "eline", minfo_m_eline, 0);
+  rb_define_method(cMethodInfo, "initialize", minfo_m_init, 3);
+  rb_define_alloc_func(cMethodInfo, minfo_s_alloc);
 
   return cMethodInfo;
 }

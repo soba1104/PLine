@@ -26,10 +26,6 @@ HEADERS = \
 
 $(srcdir)/pline.o:				\
   $(HEADERS)                                    \
-  $(srcdir)/minfo.o                             \
+  $(srcdir)/minfo.c                             \
   $(srcdir)/pline.c
-
-$(srcdir)/minfo.o:				\
-  $(HEADERS)                                    \
-  $(srcdir)/minfo.c
 
