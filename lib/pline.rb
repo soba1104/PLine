@@ -14,6 +14,12 @@ module PLine
     sprintf("%5d: %12d: %s", line, time, src[line - 1].chomp)
   end
 
+  class MethodInfo
+    def description()
+      "#{obj}#{singleton? ? '.' : '#'}#{mid}: #{spath}(#{sline} - #{eline})"
+    end
+  end
+
   at_exit(&lambda{
     result = summarize()
     return if result.empty?
@@ -21,7 +27,7 @@ module PLine
 
     each_minfo do |m|
       bug() unless m.is_a?(MethodInfo)
-      puts "#{m.obj}#{m.singleton? ? '.' : '#'}#{m.mid}: #{m.spath}(#{m.sline} - #{m.eline})"
+      puts m.description
     end
   })
 end
