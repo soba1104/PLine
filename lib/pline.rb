@@ -48,7 +48,7 @@ module PLine
         puts("========== #{m.description} #{m.sline} ==========")
         sinfo.lines[(m.sline - 1)..(m.eline - 1)].each_with_index do |t, idx|
           line = m.sline + idx
-          print(sprintf("%5d: %12d: %s", line, t, source[line - 1]))
+          print(sprintf("%5d: %12d: %s", line, t / 1000, source[line - 1]))
         end
         puts
       end
