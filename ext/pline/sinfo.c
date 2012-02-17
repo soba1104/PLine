@@ -83,7 +83,7 @@ static VALUE sinfo_s_find(VALUE self, VALUE path)
   return sinfo_find(RSTRING_PTR(path));
 }
 
-static VALUE sinfo_expand(VALUE v, long line)
+static void sinfo_expand(VALUE v, long line)
 {
   pline_src_info_t *sinfo = DATA_PTR(v);
   long i;
@@ -101,6 +101,27 @@ static VALUE sinfo_expand(VALUE v, long line)
       sinfo->vals[i] = 0;
     }
     sinfo->size = line;
+  }
+}
+
+static void sline_measure(VALUE v, long line)
+{
+  pline_src_info_t *sinfo = DATA_PTR(v);
+  struct timespec tp;
+  pline_time_t t;
+  long i;
+
+  sinfo_expand(v, line);
+  clock_gettime(CLOCK_MONOTONIC, &tp);
+  t = ((pline_time_t)tp.tv_sec)*1000*1000*1000 + ((pline_time_t)tp.tv_nsec);
+  sinfo->starts[line2idx(line)] = t;
+  for (i = line2idx(line) - 1; i >= 0; i--) {
+    if (has_value(sinfo->starts[i])) {
+      pline_time_t s = sinfo->starts[i];
+      sinfo->starts[i] = NOVALUE;
+      sinfo->vals[i] += t - s;
+      break;
+    }
   }
 }
 

@@ -42,29 +42,12 @@ static void pline_callback(rb_event_flag_t event, VALUE arg, VALUE self, ID id, 
   const char *srcfile;
   long line;
   int success = pline_callback_info(&klass, &id, &srcfile, &line);
-  pline_src_info_t *info;
-  int i;
-  struct timespec tp;
-  pline_time_t t;
-  VALUE iv;
+  VALUE sinfo;
 
   if (!success) return;
 
-  iv = sinfo_find_force(srcfile);
-  info = DATA_PTR(iv);
-  sinfo_expand(iv, line);
-
-  clock_gettime(CLOCK_MONOTONIC, &tp);
-  t = ((pline_time_t)tp.tv_sec)*1000*1000*1000 + ((pline_time_t)tp.tv_nsec);
-  info->starts[line2idx(line)] = t;
-  for (i = line2idx(line) - 1; i >= 0; i--) {
-    if (has_value(info->starts[i])) {
-      pline_time_t s = info->starts[i];
-      info->starts[i] = NOVALUE;
-      info->vals[i] += t - s;
-      break;
-    }
-  }
+  sinfo = sinfo_find_force(srcfile);
+  sline_measure(sinfo, line);
 
   return;
 }
