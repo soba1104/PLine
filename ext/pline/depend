@@ -26,6 +26,7 @@ HEADERS = \
 
 $(srcdir)/pline.o:				\
   $(HEADERS)                                    \
+  $(srcdir)/summarize.c                         \
   $(srcdir)/minfo.c                             \
   $(srcdir)/pline.c
 

@@ -29,12 +29,16 @@
 #include "ruby_source/1.9.3/insns_info.inc"
 #include "ruby_source/1.9.3/manual_update.h"
 
+#define line2idx(l) ((l) - 1)
+#define idx2line(i) ((i) + 1)
+#define nano2micro(t) (((t) / 1000))
+#define has_value(v) (v > 0)
+#define NOVALUE -1
+
 typedef long long int pline_time_t;
 typedef struct pline_src_info {
   pline_time_t *vals;
   pline_time_t *starts;
   long size;
 } pline_src_info_t;
-
-VALUE pline_method_info_init(VALUE mPLine);
 

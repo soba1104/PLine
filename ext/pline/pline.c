@@ -1,9 +1,11 @@
 #include "pline.h"
-#include "minfo.c"
 
 static VALUE mPLine, cMethodInfo;
 static st_table *pline_table;
-static VALUE mtable;
+static VALUE minfo_table;
+
+#include "minfo.c"
+#include "summarize.c"
 
 static rb_iseq_t *pline_find_iseq(VALUE obj, VALUE mid, VALUE singleton_p)
 {
@@ -168,12 +170,6 @@ static int pline_callback_info(VALUE *p_klass, ID *p_id, const char **p_srcfile,
   return 1;
 }
 
-#define line2idx(l) ((l) - 1)
-#define idx2line(i) ((i) + 1)
-#define nano2micro(t) (((t) / 1000))
-#define has_value(v) (v > 0)
-#define NOVALUE -1
-
 static void pline_callback(rb_event_flag_t event, VALUE arg, VALUE self, ID id, VALUE klass)
 {
   const char *srcfile;
@@ -262,50 +258,20 @@ static VALUE pline_m_profile(VALUE self, VALUE klass, VALUE mid, VALUE singleton
   minfo = rb_funcall(cMethodInfo, rb_intern("new"), 4, iseq->self, klass, mid, singleton_p);
   pline_inject(iseq);
   pline_hook_line(0);
-  rb_ary_push(mtable, minfo);
+  rb_ary_push(minfo_table, minfo);
 
   return Qnil;
-}
-
-static int pline_summarize_i(st_data_t key, st_data_t value, st_data_t arg)
-{
-  VALUE result = (VALUE)arg;
-  const char *srcfile = (const char *)key;
-  pline_src_info_t *info = (pline_src_info_t *)value;
-  VALUE src = rb_funcall(mPLine, rb_intern("source"), 1, rb_str_new2(srcfile));
-  long i;
-
-  rb_ary_push(result, rb_str_new2(srcfile));
-  for(i = 0; i < RARRAY_LEN(src); i++) {
-    VALUE line = LONG2NUM(idx2line(i));
-    VALUE time;
-    if (i < info->size) {
-      time = LL2NUM(nano2micro(info->vals[i]));
-    } else {
-      time = LONG2NUM(0);
-    }
-    rb_ary_push(result, rb_funcall(mPLine, rb_intern("summarize_line"), 3, src, line, time));
-  }
-  rb_ary_push(result, rb_str_new2(""));
-
-  return ST_CONTINUE;
-}
-
-static VALUE pline_m_summarize(VALUE self)
-{
-  VALUE result = rb_ary_new();
-  st_foreach(pline_table, pline_summarize_i, (st_data_t)result);
-  return result;
 }
 
 VALUE Init_pline()
 {
   mPLine = rb_define_module("PLine");
   rb_define_singleton_method(mPLine, "profile", pline_m_profile, 3);
-  rb_define_singleton_method(mPLine, "summarize", pline_m_summarize, 0);
   pline_table = st_init_strtable();
-  cMethodInfo = pline_method_info_init(mPLine);
-  mtable = rb_ary_new();
-  rb_gc_register_mark_object(mtable);
+  minfo_table = rb_ary_new();
+  rb_gc_register_mark_object(minfo_table);
+
+  pline_minfo_init();
+  pline_summarize_init();
 }
 
