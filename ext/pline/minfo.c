@@ -87,7 +87,7 @@ static VALUE minfo_eline_from_iseq(VALUE iseqval)
   check_line_information(eline);
 
   for (i = 0; i < iseq->insn_info_size; i++) {
-    VALUE l = LONG2FIX(iseq->insn_info_table[i].line_no);
+    VALUE l = LONG2FIX(iseq->insn_info_table[i].line_no + 1);
     if (l > eline) {
       eline = l;
     }
@@ -116,6 +116,18 @@ static VALUE minfo_m_init(VALUE self, VALUE iseq, VALUE obj, VALUE mid, VALUE si
   return Qnil;
 }
 
+static VALUE minfo_m_obj(VALUE self)
+{
+  pline_method_info_t *m = DATA_PTR(self);
+  return m->obj;
+}
+
+static VALUE minfo_m_mid(VALUE self)
+{
+  pline_method_info_t *m = DATA_PTR(self);
+  return m->mid;
+}
+
 static VALUE minfo_m_spath(VALUE self)
 {
   pline_method_info_t *m = DATA_PTR(self);
@@ -132,6 +144,12 @@ static VALUE minfo_m_eline(VALUE self)
 {
   pline_method_info_t *m = DATA_PTR(self);
   return m->eline;
+}
+
+static VALUE minfo_m_singleton_p(VALUE self)
+{
+  pline_method_info_t *m = DATA_PTR(self);
+  return RTEST(m->singleton_p) ? Qtrue : Qfalse;
 }
 
 static VALUE pline_s_each_minfo(VALUE self)
@@ -151,9 +169,12 @@ static void pline_minfo_init(void)
   rb_gc_register_mark_object(minfo_table);
 
   cMethodInfo = rb_define_class_under(mPLine, "MethodInfo", rb_cObject);
+  rb_define_method(cMethodInfo, "obj", minfo_m_obj, 0);
+  rb_define_method(cMethodInfo, "mid", minfo_m_mid, 0);
   rb_define_method(cMethodInfo, "spath", minfo_m_spath, 0);
   rb_define_method(cMethodInfo, "sline", minfo_m_sline, 0);
   rb_define_method(cMethodInfo, "eline", minfo_m_eline, 0);
+  rb_define_method(cMethodInfo, "singleton?", minfo_m_singleton_p, 0);
   rb_define_method(cMethodInfo, "initialize", minfo_m_init, 4);
   rb_define_alloc_func(cMethodInfo, minfo_s_alloc);
 

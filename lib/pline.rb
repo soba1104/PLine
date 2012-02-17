@@ -18,6 +18,11 @@ module PLine
     result = summarize()
     return if result.empty?
     STDERR.puts(result.join("\n"))
+
+    each_minfo do |m|
+      bug() unless m.is_a?(MethodInfo)
+      puts "#{m.obj}#{m.singleton? ? '.' : '#'}#{m.mid}: #{m.spath}(#{m.sline} - #{m.eline})"
+    end
   })
 end
 
