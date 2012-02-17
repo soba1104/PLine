@@ -125,7 +125,7 @@ static VALUE pline_m_profile(VALUE self, VALUE klass, VALUE mid, VALUE singleton
   minfo = rb_funcall(cMethodInfo, rb_intern("new"), 4, iseq->self, klass, mid, singleton_p);
   pline_inject(iseq);
   pline_hook_line(0);
-  rb_ary_push(minfo_table, minfo);
+  rb_funcall(cMethodInfo, rb_intern("register"), 1, minfo);
 
   return Qnil;
 }

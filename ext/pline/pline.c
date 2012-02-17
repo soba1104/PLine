@@ -44,7 +44,6 @@ typedef struct pline_src_info {
 
 static VALUE mPLine, cMethodInfo;
 static st_table *pline_table;
-static VALUE minfo_table;
 
 #include "iseq.c"
 #include "minfo.c"
