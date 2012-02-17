@@ -28,5 +28,6 @@ $(srcdir)/pline.o:				\
   $(HEADERS)                                    \
   $(srcdir)/summarize.c                         \
   $(srcdir)/minfo.c                             \
+  $(srcdir)/iseq.c                              \
   $(srcdir)/pline.c
 
