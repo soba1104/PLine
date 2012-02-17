@@ -1,4 +1,4 @@
-$(srcdir)/pline.o:				\
+HEADERS = \
   $(arch_hdrdir)/ruby/config.h			\
   $(hdrdir)/ruby/defines.h			\
   $(hdrdir)/ruby/intern.h			\
@@ -22,6 +22,14 @@ $(srcdir)/pline.o:				\
   $(srcdir)/ruby_source/1.9.3/atomic.h		\
   $(srcdir)/ruby_source/1.9.3/internal.h	\
   $(srcdir)/ruby_source/1.9.3/manual_update.h	\
-  $(srcdir)/extconf.h				\
+  $(srcdir)/extconf.h
+
+$(srcdir)/pline.o:				\
+  $(HEADERS)                                    \
+  $(srcdir)/minfo.o                             \
   $(srcdir)/pline.c
+
+$(srcdir)/minfo.o:				\
+  $(HEADERS)                                    \
+  $(srcdir)/minfo.c
 
