@@ -35,17 +35,11 @@
 #define has_value(v) (v > 0)
 #define NOVALUE -1
 
-typedef long long int pline_time_t;
-typedef struct pline_src_info {
-  pline_time_t *vals;
-  pline_time_t *starts;
-  long size;
-} pline_src_info_t;
-
-static VALUE mPLine, cMethodInfo;
+static VALUE mPLine, cSourceInfo, cMethodInfo;
 static st_table *pline_table;
 
 #include "iseq.c"
+#include "sinfo.c"
 #include "minfo.c"
 #include "profile.c"
 #include "summarize.c"
@@ -53,6 +47,7 @@ static st_table *pline_table;
 VALUE Init_pline()
 {
   mPLine = rb_define_module("PLine");
+  pline_sinfo_init();
   pline_minfo_init();
   pline_profile_init();
   pline_summarize_init();

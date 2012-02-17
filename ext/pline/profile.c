@@ -50,10 +50,9 @@ static void pline_callback(rb_event_flag_t event, VALUE arg, VALUE self, ID id, 
   if (!success) return;
 
   if (!st_lookup(pline_table, (st_data_t)srcfile, (st_data_t*)&info)) {
-    info = ALLOC(pline_src_info_t);
-    info->vals = NULL;
-    info->starts = NULL;
-    info->size = 0;
+    VALUE iv = rb_funcall(cSourceInfo, rb_intern("new"), 0);
+    rb_gc_register_mark_object(iv);
+    info = DATA_PTR(iv);
     st_insert(pline_table, (st_data_t)srcfile, (st_data_t)info);
   }
 
