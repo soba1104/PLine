@@ -333,6 +333,6 @@ VALUE Init_pline()
   mPLine = rb_define_module("PLine");
   rb_define_singleton_method(mPLine, "profile", pline_m_profile, 3);
   rb_define_singleton_method(mPLine, "summarize", pline_m_summarize, 0);
-  pline_table = st_init_numtable();
+  pline_table = st_init_strtable();
 }
 
