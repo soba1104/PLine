@@ -245,35 +245,10 @@ static void pline_hook_line(int remove)
   return;
 }
 
-static void pline_add_method(VALUE klass, VALUE mid, rb_iseq_t *iseq)
-{
-  VALUE spath = iseq->filepath;
-  VALUE sline = iseq->line_no;
-  VALUE eline = iseq->line_no;
-  VALUE valid = rb_funcall(rb_cFile, rb_intern("exist?"), 1, spath);
-  VALUE minfo;
-  unsigned int i;
-
-  if (!RTEST(valid) || rb_class_of(sline) != rb_cFixnum || FIX2LONG(sline) < 0) {
-    rb_raise(rb_eArgError, "unexpected source information");
-  }
-
-  for (i = 0; i < iseq->insn_info_size; i++) {
-    VALUE l = LONG2FIX(iseq->insn_info_table[i].line_no);
-    if (l > eline) {
-      eline = l;
-    }
-  }
-
-  minfo = rb_funcall(cMethodInfo, rb_intern("new"), 3, spath, sline, eline);
-  rb_ary_push(mtable, minfo);
-
-  return;
-}
-
 static VALUE pline_m_profile(VALUE self, VALUE klass, VALUE mid, VALUE singleton_p)
 {
   rb_iseq_t *iseq;
+  VALUE minfo;
 
   if (rb_obj_class(klass) != rb_cClass) {
     rb_raise(rb_eArgError, "first argument should be class");
@@ -284,10 +259,10 @@ static VALUE pline_m_profile(VALUE self, VALUE klass, VALUE mid, VALUE singleton
   }
 
   iseq = pline_find_iseq(klass, mid, singleton_p);
-  pline_add_method(klass, mid, iseq);
-
+  minfo = rb_funcall(cMethodInfo, rb_intern("new"), 4, iseq->self, klass, mid, singleton_p);
   pline_inject(iseq);
   pline_hook_line(0);
+  rb_ary_push(mtable, minfo);
 
   return Qnil;
 }
