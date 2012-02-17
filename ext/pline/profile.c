@@ -73,21 +73,17 @@ static void pline_hook_line(int remove)
   return;
 }
 
-static VALUE pline_m_profile(VALUE self, VALUE klass, VALUE mid, VALUE singleton_p)
+static VALUE pline_m_profile(VALUE self, VALUE obj, VALUE mid, VALUE singleton_p)
 {
   rb_iseq_t *iseq;
   VALUE minfo;
-
-  if (rb_obj_class(klass) != rb_cClass) {
-    rb_raise(rb_eArgError, "first argument should be class");
-  }
 
   if (rb_obj_class(mid) != rb_cSymbol) {
     rb_raise(rb_eArgError, "second argument should be symbol");
   }
 
-  iseq = pline_find_iseq(klass, mid, singleton_p);
-  minfo = rb_funcall(cMethodInfo, rb_intern("new"), 4, iseq->self, klass, mid, singleton_p);
+  iseq = pline_find_iseq(obj, mid, singleton_p);
+  minfo = rb_funcall(cMethodInfo, rb_intern("new"), 4, iseq->self, obj, mid, singleton_p);
   pline_inject(iseq);
   pline_hook_line(0);
   rb_funcall(cMethodInfo, rb_intern("register"), 1, minfo);

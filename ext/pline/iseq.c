@@ -18,7 +18,7 @@ static rb_iseq_t *pline_find_iseq(VALUE obj, VALUE mid, VALUE singleton_p)
     } else if (c == rb_cModule) {
       class = 0;
     } else {
-      rb_bug("pline_find_iseq: should not be reached(0)");
+      rb_raise(rb_eArgError, "expected class or module");
     }
     km = obj;
   }
