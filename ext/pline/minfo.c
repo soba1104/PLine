@@ -134,6 +134,17 @@ static VALUE minfo_m_eline(VALUE self)
   return m->eline;
 }
 
+static VALUE pline_s_each_minfo(VALUE self)
+{
+  long i;
+
+  for (i=0; i<RARRAY_LEN(minfo_table); i++) {
+    rb_yield(RARRAY_PTR(minfo_table)[i]);
+  }
+
+  return Qnil;
+}
+
 static void pline_minfo_init(void)
 {
   minfo_table = rb_ary_new();
@@ -145,5 +156,7 @@ static void pline_minfo_init(void)
   rb_define_method(cMethodInfo, "eline", minfo_m_eline, 0);
   rb_define_method(cMethodInfo, "initialize", minfo_m_init, 4);
   rb_define_alloc_func(cMethodInfo, minfo_s_alloc);
+
+  rb_define_singleton_method(mPLine, "each_minfo", pline_s_each_minfo, 0);
 }
 
