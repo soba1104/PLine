@@ -52,21 +52,7 @@ static void pline_callback(rb_event_flag_t event, VALUE arg, VALUE self, ID id, 
 
   iv = sinfo_find_force(srcfile);
   info = DATA_PTR(iv);
-
-  if (info->size < line) {
-    if (info->starts && info->vals) {
-      REALLOC_N(info->starts, pline_time_t, line);
-      REALLOC_N(info->vals, pline_time_t, line);
-    } else {
-      info->starts = ALLOC_N(pline_time_t, line);
-      info->vals = ALLOC_N(pline_time_t, line);
-    }
-    for (i = info->size; i < line; i++) {
-      info->starts[i] = NOVALUE;
-      info->vals[i] = 0;
-    }
-    info->size = line;
-  }
+  sinfo_expand(iv, line);
 
   clock_gettime(CLOCK_MONOTONIC, &tp);
   t = ((pline_time_t)tp.tv_sec)*1000*1000*1000 + ((pline_time_t)tp.tv_nsec);

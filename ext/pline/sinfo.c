@@ -83,6 +83,27 @@ static VALUE sinfo_s_find(VALUE self, VALUE path)
   return sinfo_find(RSTRING_PTR(path));
 }
 
+static VALUE sinfo_expand(VALUE v, long line)
+{
+  pline_src_info_t *sinfo = DATA_PTR(v);
+  long i;
+
+  if (sinfo->size < line) {
+    if (sinfo->starts && sinfo->vals) {
+      REALLOC_N(sinfo->starts, pline_time_t, line);
+      REALLOC_N(sinfo->vals, pline_time_t, line);
+    } else {
+      sinfo->starts = ALLOC_N(pline_time_t, line);
+      sinfo->vals = ALLOC_N(pline_time_t, line);
+    }
+    for (i = sinfo->size; i < line; i++) {
+      sinfo->starts[i] = NOVALUE;
+      sinfo->vals[i] = 0;
+    }
+    sinfo->size = line;
+  }
+}
+
 static void pline_sinfo_init(void)
 {
   cSourceInfo = rb_define_class_under(mPLine, "SourceInfo", rb_cObject);
