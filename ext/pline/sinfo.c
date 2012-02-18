@@ -2,6 +2,62 @@ static st_table *pline_table;
 
 typedef long long int pline_time_t;
 
+/* pline_sinfo_container */
+typedef struct pline_sinfo_container {
+  st_table *sinfo_table;
+} pline_sinfo_container_t;
+static ID sinfo_container_id;
+
+static void sinfo_container_mark(void *p)
+{
+  pline_sinfo_container_t *s = p;
+
+  if (!s) return;
+}
+
+static void sinfo_container_free(void *p)
+{
+  pline_sinfo_container_t *s = p;
+
+  if (!s) return;
+
+  st_free_table(s->sinfo_table);
+  xfree(s);
+}
+
+static const rb_data_type_t sinfo_container_data_type = {
+  "pline_sinfo_container",
+  {sinfo_container_mark, sinfo_container_free, NULL,},
+};
+
+static VALUE sinfo_container_s_alloc(VALUE klass)
+{
+  VALUE obj;
+  pline_sinfo_container_t *s;
+
+  obj = TypedData_Make_Struct(klass, pline_sinfo_container_t, &sinfo_container_data_type, s);
+  s->sinfo_table = st_init_strtable();
+
+  return obj;
+}
+
+static st_table* sinfo_container_current_sinfo_table(void)
+{
+  VALUE scon, thval = rb_thread_current();
+  pline_sinfo_container_t *s;
+
+  scon = rb_thread_local_aref(thval, sinfo_container_id);
+  if (!RTEST(scon)) {
+    scon = rb_funcall(cSourceInfoContainer, rb_intern("new"), 0);
+    rb_thread_local_aset(thval, sinfo_container_id, scon);
+  }
+  s = DATA_PTR(scon);
+
+  return s->sinfo_table;
+}
+
+/* pline_src_info */
+
 typedef struct pline_line_info {
   pline_time_t score;
   pline_time_t start;
@@ -150,6 +206,9 @@ static void pline_sinfo_init(void)
   rb_define_singleton_method(cSourceInfo, "find", sinfo_s_find, 1);
   rb_define_method(cSourceInfo, "lines", sinfo_m_lines, 0);
   rb_define_alloc_func(cSourceInfo, sinfo_s_alloc);
+  cSourceInfoContainer = rb_define_class_under(cSourceInfo, "SourceInfoContainer", rb_cObject);
+  rb_define_alloc_func(cSourceInfoContainer, sinfo_container_s_alloc);
+  sinfo_container_id = rb_intern("__pline_sinfo_container");
   pline_table = st_init_strtable();
 }
 

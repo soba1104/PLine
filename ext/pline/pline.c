@@ -35,7 +35,7 @@
 #define has_value(v) (v > 0)
 #define NOVALUE -1
 
-static VALUE mPLine, cSourceInfo, cMethodInfo;
+static VALUE mPLine, cSourceInfo, cMethodInfo, cSourceInfoContainer;
 
 #include "iseq.c"
 #include "sinfo.c"
