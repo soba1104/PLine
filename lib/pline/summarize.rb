@@ -72,10 +72,13 @@ module PLine
       labels = ["Line", "Time(usec)", "Source"]
       files.each do |spath, minfos|
         sinfo = SourceInfo.find(spath)
+        next unless sinfo
+        lines = sinfo.lines
         source = File.readlines(spath)
         minfos.each do |m|
           contents = []
-          sinfo.lines[(m.sline - 1)..(m.eline - 1)].each_with_index do |t, idx|
+          next if lines.size < m.eline
+          lines[(m.sline - 1)..(m.eline - 1)].each_with_index do |t, idx|
             line = m.sline + idx
             contents << [line.to_s, (t / 1000).to_s, source[line - 1]]
           end
