@@ -182,9 +182,10 @@ static void __sinfo_measure(pline_src_info_t *sinfo, long line, struct timespec 
   }
 }
 
-static void sinfo_measure(VALUE v, long line)
+static void sinfo_measure(const char *srcfile, long line)
 {
-  pline_src_info_t *sinfo = DATA_PTR(v);
+  VALUE sv = sinfo_find_force(srcfile);
+  pline_src_info_t *sinfo = DATA_PTR(sv);
   struct timespec tp;
   long i;
 

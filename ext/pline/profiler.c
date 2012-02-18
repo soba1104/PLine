@@ -72,9 +72,7 @@ static void profiler_linetrace_callback(rb_event_flag_t event, VALUE arg, VALUE 
   VALUE sinfo;
 
   if (!success) return;
-
-  sinfo = sinfo_find_force(srcfile);
-  sinfo_measure(sinfo, line);
+  sinfo_measure(srcfile, line);
 
   return;
 }
