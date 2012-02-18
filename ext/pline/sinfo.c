@@ -1,10 +1,15 @@
 static st_table *pline_table;
 
 typedef long long int pline_time_t;
+
+typedef struct pline_line_info {
+  pline_time_t score;
+  pline_time_t start;
+  pline_time_t prev;
+} pline_line_info_t;
+
 typedef struct pline_src_info {
-  pline_time_t *vals;
-  pline_time_t *starts;
-  pline_time_t *prevs;
+  pline_line_info_t *lines;
   long size;
 } pline_src_info_t;
 
@@ -31,8 +36,7 @@ static VALUE sinfo_s_alloc(VALUE klass)
   pline_src_info_t *s;
 
   obj = TypedData_Make_Struct(klass, pline_src_info_t, &sinfo_data_type, s);
-  s->vals = NULL;
-  s->starts = NULL;
+  s->lines = NULL;
   s->size = 0;
 
   return obj;
@@ -45,13 +49,13 @@ static VALUE sinfo_m_lines(VALUE self)
   int i;
 
   for (i = 0; i < s->size; i++) {
-    rb_ary_push(lines, LL2NUM(s->vals[i]));
+    rb_ary_push(lines, LL2NUM(s->lines[i].score));
   }
 
   return lines;
 }
 
-static VALUE sinfo_find(char *s)
+static VALUE sinfo_find(const char *s)
 {
   VALUE sinfo;
 
@@ -62,7 +66,7 @@ static VALUE sinfo_find(char *s)
   }
 }
 
-static VALUE sinfo_find_force(char *s)
+static VALUE sinfo_find_force(const char *s)
 {
   VALUE sinfo = sinfo_find(s);
 
@@ -89,24 +93,29 @@ static VALUE sinfo_s_find(VALUE self, VALUE path)
 static void __sinfo_measure(pline_src_info_t *sinfo, long line, struct timespec tp)
 {
   pline_time_t t;
-  long i, cidx = line2idx(line), pidx = sinfo->prevs[cidx];
+  long i, cidx, pidx;
+  pline_line_info_t *clinfo;
+
+  cidx = line2idx(line);
+  clinfo = &sinfo->lines[cidx];
+  pidx = clinfo->prev;
 
   if (pidx < 0) {
     for (i = cidx - 1; i >= 0; i--) {
-      if (has_value(sinfo->starts[i])) {
-        pidx = sinfo->prevs[cidx] = i;
+      if (has_value(sinfo->lines[i].start)) {
+        pidx = sinfo->lines[cidx].prev = i;
         break;
       }
     }
   }
 
-  t = ((pline_time_t)tp.tv_sec)*1000*1000*1000 + ((pline_time_t)tp.tv_nsec);
-  sinfo->starts[cidx] = t;
-
-  if (pidx >= 0 && has_value(sinfo->starts[pidx])) {
-    pline_time_t s = sinfo->starts[pidx];
-    sinfo->starts[pidx] = NOVALUE;
-    sinfo->vals[pidx] += (t - s);
+  clinfo->start = ((pline_time_t)tp.tv_sec)*1000*1000*1000 + ((pline_time_t)tp.tv_nsec);
+  if (pidx >= 0) {
+    pline_line_info_t *plinfo = &sinfo->lines[pidx];
+    if (has_value(plinfo->start)) {
+      plinfo->score += (clinfo->start - plinfo->start);
+      plinfo->start = NOVALUE;
+    }
   }
 }
 
@@ -117,19 +126,16 @@ static void sinfo_measure(VALUE v, long line)
   long i;
 
   if (sinfo->size < line) {
-    if (sinfo->starts && sinfo->vals) {
-      REALLOC_N(sinfo->starts, pline_time_t, line);
-      REALLOC_N(sinfo->vals, pline_time_t, line);
-      REALLOC_N(sinfo->prevs, pline_time_t, line);
+    if (sinfo->lines) {
+      REALLOC_N(sinfo->lines, pline_line_info_t, line);
     } else {
-      sinfo->starts = ALLOC_N(pline_time_t, line);
-      sinfo->vals = ALLOC_N(pline_time_t, line);
-      sinfo->prevs = ALLOC_N(pline_time_t, line);
+      sinfo->lines = ALLOC_N(pline_line_info_t, line);
     }
     for (i = sinfo->size; i < line; i++) {
-      sinfo->starts[i] = NOVALUE;
-      sinfo->vals[i] = 0;
-      sinfo->prevs[i] = -1;
+      pline_line_info_t *linfo = &sinfo->lines[i];
+      linfo->score = 0;
+      linfo->start = NOVALUE;
+      linfo->prev  = -1;
     }
     sinfo->size = line;
   }
