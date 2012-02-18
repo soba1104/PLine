@@ -1,4 +1,6 @@
 static st_table *scoring_sinfo_table;
+static st_table *process_sinfo_table;
+static st_table *preline_sinfo_table;
 
 typedef long long int pline_time_t;
 
@@ -136,7 +138,7 @@ static VALUE sinfo_find_process_sinfo_force(const char *s)
   if (!RTEST(sinfo)) {
     sinfo = rb_funcall(cSourceInfo, rb_intern("new"), 0);
     rb_gc_register_mark_object(sinfo);
-    st_insert(scoring_sinfo_table, (st_data_t)s, (st_data_t)sinfo);
+    st_insert(process_sinfo_table, (st_data_t)s, (st_data_t)sinfo);
   }
 
   return sinfo;
@@ -162,7 +164,7 @@ static VALUE sinfo_find_preline_sinfo_force(const char *s)
   if (!RTEST(sinfo)) {
     sinfo = rb_funcall(cSourceInfo, rb_intern("new"), 0);
     rb_gc_register_mark_object(sinfo);
-    st_insert(scoring_sinfo_table, (st_data_t)s, (st_data_t)sinfo);
+    st_insert(preline_sinfo_table, (st_data_t)s, (st_data_t)sinfo);
   }
 
   return sinfo;
@@ -253,5 +255,7 @@ static void pline_sinfo_init(void)
   rb_define_alloc_func(cSourceInfoContainer, sinfo_container_s_alloc);
   sinfo_container_id = rb_intern("__pline_sinfo_container");
   scoring_sinfo_table = st_init_strtable();
+  process_sinfo_table = st_init_strtable();
+  preline_sinfo_table = st_init_strtable();
 }
 
