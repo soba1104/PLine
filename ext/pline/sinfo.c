@@ -1,4 +1,4 @@
-static st_table *pline_table;
+static st_table *scoring_sinfo_table;
 
 typedef long long int pline_time_t;
 
@@ -131,12 +131,12 @@ static VALUE sinfo_find(st_table *sinfo_table, const char *s)
 
 static VALUE sinfo_find_process_sinfo_force(const char *s)
 {
-  VALUE sinfo = sinfo_find(pline_table, s);
+  VALUE sinfo = sinfo_find(scoring_sinfo_table, s);
 
   if (!RTEST(sinfo)) {
     sinfo = rb_funcall(cSourceInfo, rb_intern("new"), 0);
     rb_gc_register_mark_object(sinfo);
-    st_insert(pline_table, (st_data_t)s, (st_data_t)sinfo);
+    st_insert(scoring_sinfo_table, (st_data_t)s, (st_data_t)sinfo);
   }
 
   return sinfo;
@@ -144,12 +144,12 @@ static VALUE sinfo_find_process_sinfo_force(const char *s)
 
 static VALUE sinfo_find_scoring_sinfo_force(const char *s)
 {
-  VALUE sinfo = sinfo_find(pline_table, s);
+  VALUE sinfo = sinfo_find(scoring_sinfo_table, s);
 
   if (!RTEST(sinfo)) {
     sinfo = rb_funcall(cSourceInfo, rb_intern("new"), 0);
     rb_gc_register_mark_object(sinfo);
-    st_insert(pline_table, (st_data_t)s, (st_data_t)sinfo);
+    st_insert(scoring_sinfo_table, (st_data_t)s, (st_data_t)sinfo);
   }
 
   return sinfo;
@@ -163,7 +163,7 @@ static VALUE sinfo_s_find(VALUE self, VALUE path)
     rb_raise(rb_eArgError, "invalid argument");
   }
 
-  return sinfo_find(pline_table, RSTRING_PTR(path));
+  return sinfo_find(scoring_sinfo_table, RSTRING_PTR(path));
 }
 
 static void sinfo_expand(pline_src_info_t *sinfo, long line)
@@ -239,6 +239,6 @@ static void pline_sinfo_init(void)
   cSourceInfoContainer = rb_define_class_under(cSourceInfo, "SourceInfoContainer", rb_cObject);
   rb_define_alloc_func(cSourceInfoContainer, sinfo_container_s_alloc);
   sinfo_container_id = rb_intern("__pline_sinfo_container");
-  pline_table = st_init_strtable();
+  scoring_sinfo_table = st_init_strtable();
 }
 
