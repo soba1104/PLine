@@ -100,10 +100,12 @@ static void pline_hook_line(int remove)
   return;
 }
 
-static VALUE pline_m_profile(VALUE self, VALUE obj, VALUE mid, VALUE singleton_p)
+static VALUE pline_m_profile(int argc, VALUE *argv, VALUE self)
 {
   rb_iseq_t *iseq;
-  VALUE minfo;
+  VALUE minfo, obj, mid, singleton_p = Qfalse;
+
+  rb_scan_args(argc, argv, "21", &obj, &mid, &singleton_p);
 
   if (rb_obj_class(mid) != rb_cSymbol) {
     rb_raise(rb_eArgError, "second argument should be symbol");
@@ -120,6 +122,6 @@ static VALUE pline_m_profile(VALUE self, VALUE obj, VALUE mid, VALUE singleton_p
 
 static void pline_profile_init(void)
 {
-  rb_define_singleton_method(mPLine, "profile", pline_m_profile, 3);
+  rb_define_singleton_method(mPLine, "profile", pline_m_profile, -1);
 }
 
