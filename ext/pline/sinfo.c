@@ -142,6 +142,19 @@ static VALUE sinfo_find_process_sinfo_force(const char *s)
   return sinfo;
 }
 
+static VALUE sinfo_find_scoring_sinfo_force(const char *s)
+{
+  VALUE sinfo = sinfo_find(pline_table, s);
+
+  if (!RTEST(sinfo)) {
+    sinfo = rb_funcall(cSourceInfo, rb_intern("new"), 0);
+    rb_gc_register_mark_object(sinfo);
+    st_insert(pline_table, (st_data_t)s, (st_data_t)sinfo);
+  }
+
+  return sinfo;
+}
+
 static VALUE sinfo_s_find(VALUE self, VALUE path)
 {
   VALUE sinfo;
@@ -173,7 +186,7 @@ static void sinfo_expand(pline_src_info_t *sinfo, long line)
   }
 }
 
-static void __sinfo_measure(pline_src_info_t *process_sinfo, long line, struct timespec tp)
+static void __sinfo_measure(pline_src_info_t *scoring_sinfo, pline_src_info_t *process_sinfo, long line, struct timespec tp)
 {
   pline_time_t t;
   long i, cidx, pidx;
@@ -204,14 +217,17 @@ static void __sinfo_measure(pline_src_info_t *process_sinfo, long line, struct t
 
 static void sinfo_measure(const char *srcfile, long line)
 {
+  VALUE sv = sinfo_find_scoring_sinfo_force(srcfile);
   VALUE pv = sinfo_find_process_sinfo_force(srcfile);
+  pline_src_info_t *scoring_sinfo = DATA_PTR(sv);
   pline_src_info_t *process_sinfo = DATA_PTR(pv);
   struct timespec tp;
 
+  sinfo_expand(scoring_sinfo, line);
   sinfo_expand(process_sinfo, line);
 
   clock_gettime(CLOCK_MONOTONIC, &tp);
-  __sinfo_measure(process_sinfo, line, tp);
+  __sinfo_measure(scoring_sinfo, process_sinfo, line, tp);
 }
 
 static void pline_sinfo_init(void)
