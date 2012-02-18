@@ -40,13 +40,13 @@ static VALUE mPLine, cSourceInfo, cMethodInfo;
 #include "iseq.c"
 #include "sinfo.c"
 #include "minfo.c"
-#include "profile.c"
+#include "profiler.c"
 
 VALUE Init_pline()
 {
   mPLine = rb_define_module("PLine");
   pline_sinfo_init();
   pline_minfo_init();
-  pline_profile_init();
+  pline_profiler_init();
 }
 

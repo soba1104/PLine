@@ -1,4 +1,4 @@
-static int pline_callback_info(const char **p_srcfile, long *p_line)
+static int profiler_source_location(const char **p_srcfile, long *p_line)
 {
 #if 0
   VALUE thval = rb_thread_current();
@@ -64,11 +64,11 @@ static int pline_callback_info(const char **p_srcfile, long *p_line)
   return 1;
 }
 
-static void pline_callback(rb_event_flag_t event, VALUE arg, VALUE self, ID id, VALUE klass)
+static void profiler_linetrace_callback(rb_event_flag_t event, VALUE arg, VALUE self, ID id, VALUE klass)
 {
   const char *srcfile;
   long line;
-  int success = pline_callback_info(&srcfile, &line);
+  int success = profiler_source_location(&srcfile, &line);
   VALUE sinfo;
 
   if (!success) return;
@@ -79,14 +79,14 @@ static void pline_callback(rb_event_flag_t event, VALUE arg, VALUE self, ID id, 
   return;
 }
 
-static void pline_hook_line(int remove)
+static void profiler_linetrace(int remove)
 {
   static int hooked = 0;
 
   if (remove) {
     if (!hooked) return;
     hooked = 0;
-    rb_remove_event_hook(&pline_callback);
+    rb_remove_event_hook(&profiler_linetrace_callback);
     return;
   }
 
@@ -94,13 +94,13 @@ static void pline_hook_line(int remove)
     return;
   }
 
-  rb_add_event_hook(&pline_callback, RUBY_EVENT_END, Qnil);
+  rb_add_event_hook(&profiler_linetrace_callback, RUBY_EVENT_END, Qnil);
   hooked = 1;
 
   return;
 }
 
-static VALUE pline_m_profile(int argc, VALUE *argv, VALUE self)
+static VALUE profiler_m_profile(int argc, VALUE *argv, VALUE self)
 {
   rb_iseq_t *iseq;
   VALUE minfo, obj, mid, singleton_p = Qfalse;
@@ -114,14 +114,14 @@ static VALUE pline_m_profile(int argc, VALUE *argv, VALUE self)
   iseq = pline_find_iseq(obj, mid, singleton_p);
   minfo = rb_funcall(cMethodInfo, rb_intern("new"), 4, iseq->self, obj, mid, singleton_p);
   pline_inject(iseq);
-  pline_hook_line(0);
+  profiler_linetrace(0);
   rb_funcall(cMethodInfo, rb_intern("register"), 1, minfo);
 
   return Qnil;
 }
 
-static void pline_profile_init(void)
+static void pline_profiler_init(void)
 {
-  rb_define_singleton_method(mPLine, "profile", pline_m_profile, -1);
+  rb_define_singleton_method(mPLine, "profile", profiler_m_profile, -1);
 }
 
