@@ -129,7 +129,7 @@ static VALUE sinfo_find(st_table *sinfo_table, const char *s)
   }
 }
 
-static VALUE sinfo_find_current_force(const char *s)
+static VALUE sinfo_find_process_sinfo_force(const char *s)
 {
   VALUE sinfo = sinfo_find(pline_table, s);
 
@@ -173,20 +173,20 @@ static void sinfo_expand(pline_src_info_t *sinfo, long line)
   }
 }
 
-static void __sinfo_measure(pline_src_info_t *sinfo, long line, struct timespec tp)
+static void __sinfo_measure(pline_src_info_t *process_sinfo, long line, struct timespec tp)
 {
   pline_time_t t;
   long i, cidx, pidx;
   pline_line_info_t *clinfo;
 
   cidx = line2idx(line);
-  clinfo = &sinfo->lines[cidx];
+  clinfo = &process_sinfo->lines[cidx];
   pidx = clinfo->prev;
 
   if (pidx < 0) {
     for (i = cidx - 1; i >= 0; i--) {
-      if (has_value(sinfo->lines[i].start)) {
-        pidx = sinfo->lines[cidx].prev = i;
+      if (has_value(process_sinfo->lines[i].start)) {
+        pidx = process_sinfo->lines[cidx].prev = i;
         break;
       }
     }
@@ -194,7 +194,7 @@ static void __sinfo_measure(pline_src_info_t *sinfo, long line, struct timespec 
 
   clinfo->start = ((pline_time_t)tp.tv_sec)*1000*1000*1000 + ((pline_time_t)tp.tv_nsec);
   if (pidx >= 0) {
-    pline_line_info_t *plinfo = &sinfo->lines[pidx];
+    pline_line_info_t *plinfo = &process_sinfo->lines[pidx];
     if (has_value(plinfo->start)) {
       plinfo->score += (clinfo->start - plinfo->start);
       plinfo->start = NOVALUE;
@@ -204,14 +204,14 @@ static void __sinfo_measure(pline_src_info_t *sinfo, long line, struct timespec 
 
 static void sinfo_measure(const char *srcfile, long line)
 {
-  VALUE v = sinfo_find_current_force(srcfile);
-  pline_src_info_t *sinfo = DATA_PTR(v);
+  VALUE pv = sinfo_find_process_sinfo_force(srcfile);
+  pline_src_info_t *process_sinfo = DATA_PTR(pv);
   struct timespec tp;
 
-  sinfo_expand(sinfo, line);
+  sinfo_expand(process_sinfo, line);
 
   clock_gettime(CLOCK_MONOTONIC, &tp);
-  __sinfo_measure(sinfo, line, tp);
+  __sinfo_measure(process_sinfo, line, tp);
 }
 
 static void pline_sinfo_init(void)
