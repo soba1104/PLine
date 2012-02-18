@@ -129,7 +129,7 @@ static VALUE sinfo_find(st_table *sinfo_table, const char *s)
   }
 }
 
-static VALUE sinfo_find_force(const char *s)
+static VALUE sinfo_find_current_force(const char *s)
 {
   VALUE sinfo = sinfo_find(pline_table, s);
 
@@ -184,8 +184,8 @@ static void __sinfo_measure(pline_src_info_t *sinfo, long line, struct timespec 
 
 static void sinfo_measure(const char *srcfile, long line)
 {
-  VALUE sv = sinfo_find_force(srcfile);
-  pline_src_info_t *sinfo = DATA_PTR(sv);
+  VALUE v = sinfo_find_current_force(srcfile);
+  pline_src_info_t *sinfo = DATA_PTR(v);
   struct timespec tp;
   long i;
 
