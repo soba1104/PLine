@@ -233,8 +233,8 @@ static void sinfo_measure(const char *srcfile, long line)
   VALUE scoring_v = sinfo_find_scoring_sinfo_force(srcfile);
   VALUE process_v = sinfo_find_process_sinfo_force(srcfile);
   VALUE preline_v = sinfo_find_preline_sinfo_force(srcfile);
-  pline_src_info_t *scoring_sinfo  = DATA_PTR(scoring_v);
-  pline_src_info_t *process_sinfo  = DATA_PTR(process_v);
+  pline_src_info_t *scoring_sinfo = DATA_PTR(scoring_v);
+  pline_src_info_t *process_sinfo = DATA_PTR(process_v);
   pline_src_info_t *preline_sinfo = DATA_PTR(preline_v);
   struct timespec tp;
 
