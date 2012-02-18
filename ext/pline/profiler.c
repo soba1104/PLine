@@ -111,9 +111,9 @@ static VALUE profiler_m_profile(int argc, VALUE *argv, VALUE self)
     rb_raise(rb_eArgError, "second argument should be symbol");
   }
 
-  iseq = pline_find_iseq(obj, mid, singleton_p);
+  iseq = iseq_find(obj, mid, singleton_p);
   minfo = rb_funcall(cMethodInfo, rb_intern("new"), 4, iseq->self, obj, mid, singleton_p);
-  pline_inject(iseq);
+  iseq_inject(iseq);
   profiler_linetrace(0);
   rb_funcall(cMethodInfo, rb_intern("register"), 1, minfo);
 

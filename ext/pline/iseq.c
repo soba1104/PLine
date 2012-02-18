@@ -1,4 +1,4 @@
-static rb_iseq_t *pline_find_iseq(VALUE obj, VALUE mid, VALUE singleton_p)
+static rb_iseq_t *iseq_find(VALUE obj, VALUE mid, VALUE singleton_p)
 {
   rb_method_entry_t *me;
   rb_method_definition_t *def;
@@ -82,7 +82,7 @@ static rb_iseq_t *pline_find_iseq(VALUE obj, VALUE mid, VALUE singleton_p)
            msg, RSTRING_PTR(name), sep, rb_id2name(SYM2ID(mid)));
 }
 
-static void pline_inject(rb_iseq_t *iseq)
+static void iseq_inject(rb_iseq_t *iseq)
 {
   int idx, len = iseq->iseq_size;
   VALUE *seq = iseq->iseq;
@@ -117,7 +117,7 @@ static void pline_inject(rb_iseq_t *iseq)
       break;
     }
     if (child) {
-      pline_inject(child);
+      iseq_inject(child);
     }
   }
 }
