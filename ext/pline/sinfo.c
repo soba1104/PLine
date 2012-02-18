@@ -4,6 +4,7 @@ typedef long long int pline_time_t;
 typedef struct pline_src_info {
   pline_time_t *vals;
   pline_time_t *starts;
+  pline_time_t *prevs;
   long size;
 } pline_src_info_t;
 
@@ -85,39 +86,56 @@ static VALUE sinfo_s_find(VALUE self, VALUE path)
   return sinfo_find(RSTRING_PTR(path));
 }
 
+static void __sinfo_measure(pline_src_info_t *sinfo, long line, struct timespec tp)
+{
+  pline_time_t t;
+  long i, cidx = line2idx(line), pidx = sinfo->prevs[cidx];
+
+  if (pidx < 0) {
+    for (i = cidx - 1; i >= 0; i--) {
+      if (has_value(sinfo->starts[i])) {
+        pidx = sinfo->prevs[cidx] = i;
+        break;
+      }
+    }
+  }
+
+  t = ((pline_time_t)tp.tv_sec)*1000*1000*1000 + ((pline_time_t)tp.tv_nsec);
+  sinfo->starts[cidx] = t;
+
+  if (pidx >= 0 && has_value(sinfo->starts[pidx])) {
+    pline_time_t s = sinfo->starts[pidx];
+    sinfo->starts[pidx] = NOVALUE;
+    sinfo->vals[pidx] += (t - s);
+  }
+}
+
 static void sinfo_measure(VALUE v, long line)
 {
   pline_src_info_t *sinfo = DATA_PTR(v);
   struct timespec tp;
-  pline_time_t t;
   long i;
 
   if (sinfo->size < line) {
     if (sinfo->starts && sinfo->vals) {
       REALLOC_N(sinfo->starts, pline_time_t, line);
       REALLOC_N(sinfo->vals, pline_time_t, line);
+      REALLOC_N(sinfo->prevs, pline_time_t, line);
     } else {
       sinfo->starts = ALLOC_N(pline_time_t, line);
       sinfo->vals = ALLOC_N(pline_time_t, line);
+      sinfo->prevs = ALLOC_N(pline_time_t, line);
     }
     for (i = sinfo->size; i < line; i++) {
       sinfo->starts[i] = NOVALUE;
       sinfo->vals[i] = 0;
+      sinfo->prevs[i] = -1;
     }
     sinfo->size = line;
   }
 
   clock_gettime(CLOCK_MONOTONIC, &tp);
-  t = ((pline_time_t)tp.tv_sec)*1000*1000*1000 + ((pline_time_t)tp.tv_nsec);
-  sinfo->starts[line2idx(line)] = t;
-  for (i = line2idx(line) - 1; i >= 0; i--) {
-    if (has_value(sinfo->starts[i])) {
-      pline_time_t s = sinfo->starts[i];
-      sinfo->starts[i] = NOVALUE;
-      sinfo->vals[i] += t - s;
-      break;
-    }
-  }
+  __sinfo_measure(sinfo, line, tp);
 }
 
 static void pline_sinfo_init(void)

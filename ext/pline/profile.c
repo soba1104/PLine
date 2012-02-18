@@ -1,23 +1,7 @@
-static int pline_callback_info(VALUE *p_klass, ID *p_id, const char **p_srcfile, long *p_line)
+static int pline_callback_info(const char **p_srcfile, long *p_line)
 {
-  VALUE klass = *p_klass;
-  ID id = *p_id;
   const char *srcfile;
   long line;
-
-  if (klass == 0) {
-    rb_frame_method_id_and_class(&id, &klass);
-  }
-  if (klass) {
-    if (TYPE(klass) == T_ICLASS) {
-      klass = RBASIC(klass)->klass;
-    } else if (FL_TEST(klass, FL_SINGLETON)) {
-      klass = rb_iv_get(klass, "__attached__");
-    }
-  }
-  if (!klass || !id || id == ID_ALLOCATOR) {
-    return 0;
-  }
 
   srcfile = rb_sourcefile();
   if (!srcfile) {
@@ -29,8 +13,6 @@ static int pline_callback_info(VALUE *p_klass, ID *p_id, const char **p_srcfile,
     return 0;
   }
 
-  *p_klass = klass;
-  *p_id = id;
   *p_srcfile = srcfile;
   *p_line = line;
 
@@ -41,7 +23,7 @@ static void pline_callback(rb_event_flag_t event, VALUE arg, VALUE self, ID id, 
 {
   const char *srcfile;
   long line;
-  int success = pline_callback_info(&klass, &id, &srcfile, &line);
+  int success = pline_callback_info(&srcfile, &line);
   VALUE sinfo;
 
   if (!success) return;
