@@ -190,7 +190,39 @@ static void sinfo_allocate_lines(pline_src_info_t *sinfo, long line)
   }
 }
 
-static void sinfo_expand(pline_src_info_t *sinfo, long line)
+static void sinfo_expand_scoring_sinfo(pline_src_info_t *sinfo, long line)
+{
+  long i;
+
+  if (sinfo->size < line) {
+    sinfo_allocate_lines(sinfo, line);
+    for (i = sinfo->size; i < line; i++) {
+      pline_line_info_t *linfo = &sinfo->lines[i];
+      linfo->score = 0;
+      linfo->start = NOVALUE;
+      linfo->prev  = -1;
+    }
+    sinfo->size = line;
+  }
+}
+
+static void sinfo_expand_process_sinfo(pline_src_info_t *sinfo, long line)
+{
+  long i;
+
+  if (sinfo->size < line) {
+    sinfo_allocate_lines(sinfo, line);
+    for (i = sinfo->size; i < line; i++) {
+      pline_line_info_t *linfo = &sinfo->lines[i];
+      linfo->score = 0;
+      linfo->start = NOVALUE;
+      linfo->prev  = -1;
+    }
+    sinfo->size = line;
+  }
+}
+
+static void sinfo_expand_preline_sinfo(pline_src_info_t *sinfo, long line)
 {
   long i;
 
