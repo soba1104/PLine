@@ -181,16 +181,21 @@ static VALUE sinfo_s_find(VALUE self, VALUE path)
   return sinfo_find(scoring_sinfo_table, RSTRING_PTR(path));
 }
 
+static void sinfo_allocate_lines(pline_src_info_t *sinfo, long line)
+{
+  if (sinfo->lines) {
+    REALLOC_N(sinfo->lines, pline_line_info_t, line);
+  } else {
+    sinfo->lines = ALLOC_N(pline_line_info_t, line);
+  }
+}
+
 static void sinfo_expand(pline_src_info_t *sinfo, long line)
 {
   long i;
 
   if (sinfo->size < line) {
-    if (sinfo->lines) {
-      REALLOC_N(sinfo->lines, pline_line_info_t, line);
-    } else {
-      sinfo->lines = ALLOC_N(pline_line_info_t, line);
-    }
+    sinfo_allocate_lines(sinfo, line);
     for (i = sinfo->size; i < line; i++) {
       pline_line_info_t *linfo = &sinfo->lines[i];
       linfo->score = 0;
