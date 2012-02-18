@@ -69,16 +69,23 @@ typedef struct pline_src_info {
   long size;
 } pline_src_info_t;
 
-static void sinfo_mark(void *ptr)
+static void sinfo_mark(void *p)
 {
-  pline_src_info_t *s = ptr;
+  pline_src_info_t *s = p;
 
   if (!s) return;
 }
 
 static void sinfo_free(void *p)
 {
-  if (p) xfree(p);
+  pline_src_info_t *s = p;
+
+  if (!s) return;
+
+  if (s->lines) {
+    xfree(s->lines);
+  }
+  xfree(s);
 }
 
 static const rb_data_type_t sinfo_data_type = {
