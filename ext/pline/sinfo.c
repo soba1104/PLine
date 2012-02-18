@@ -118,11 +118,11 @@ static VALUE sinfo_m_lines(VALUE self)
   return lines;
 }
 
-static VALUE sinfo_find(const char *s)
+static VALUE sinfo_find(st_table *sinfo_table, const char *s)
 {
   VALUE sinfo;
 
-  if (st_lookup(pline_table, (st_data_t)s, (st_data_t*)&sinfo)) {
+  if (st_lookup(sinfo_table, (st_data_t)s, (st_data_t*)&sinfo)) {
     return sinfo;
   } else {
     return Qnil;
@@ -131,7 +131,7 @@ static VALUE sinfo_find(const char *s)
 
 static VALUE sinfo_find_force(const char *s)
 {
-  VALUE sinfo = sinfo_find(s);
+  VALUE sinfo = sinfo_find(pline_table, s);
 
   if (!RTEST(sinfo)) {
     sinfo = rb_funcall(cSourceInfo, rb_intern("new"), 0);
@@ -150,7 +150,7 @@ static VALUE sinfo_s_find(VALUE self, VALUE path)
     rb_raise(rb_eArgError, "invalid argument");
   }
 
-  return sinfo_find(RSTRING_PTR(path));
+  return sinfo_find(pline_table, RSTRING_PTR(path));
 }
 
 static void __sinfo_measure(pline_src_info_t *sinfo, long line, struct timespec tp)
