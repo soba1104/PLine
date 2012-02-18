@@ -240,14 +240,26 @@ static void sinfo_expand_preline_sinfo(pline_src_info_t *sinfo, long line)
 }
 
 /* measurement using sinfo */
-static void __sinfo_measure(pline_src_info_t *scoring_sinfo, pline_src_info_t *process_sinfo, pline_src_info_t *preline_sinfo, long line, struct timespec tp)
+static void sinfo_measure(const char *srcfile, long line)
 {
-  pline_time_t t;
+  VALUE scoring_v = sinfo_find_scoring_sinfo_force(srcfile);
+  VALUE process_v = sinfo_find_process_sinfo_force(srcfile);
+  VALUE preline_v = sinfo_find_preline_sinfo_force(srcfile);
+  pline_src_info_t *scoring_sinfo = DATA_PTR(scoring_v);
+  pline_src_info_t *process_sinfo = DATA_PTR(process_v);
+  pline_src_info_t *preline_sinfo = DATA_PTR(preline_v);
+  struct timespec tp;
   long i, cidx, pidx;
+  pline_time_t t;
+
+  sinfo_expand_scoring_sinfo(scoring_sinfo, line);
+  sinfo_expand_process_sinfo(process_sinfo, line);
+  sinfo_expand_preline_sinfo(preline_sinfo, line);
+
+  clock_gettime(CLOCK_MONOTONIC, &tp);
 
   cidx = line2idx(line);
   pidx = preline_sinfo->lines[cidx].prev;
-
   if (pidx < 0) {
     for (i = cidx - 1; i >= 0; i--) {
       if (has_value(process_sinfo->lines[i].start)) {
@@ -266,24 +278,6 @@ static void __sinfo_measure(pline_src_info_t *scoring_sinfo, pline_src_info_t *p
       process_sinfo->lines[pidx].start = NOVALUE;
     }
   }
-}
-
-static void sinfo_measure(const char *srcfile, long line)
-{
-  VALUE scoring_v = sinfo_find_scoring_sinfo_force(srcfile);
-  VALUE process_v = sinfo_find_process_sinfo_force(srcfile);
-  VALUE preline_v = sinfo_find_preline_sinfo_force(srcfile);
-  pline_src_info_t *scoring_sinfo = DATA_PTR(scoring_v);
-  pline_src_info_t *process_sinfo = DATA_PTR(process_v);
-  pline_src_info_t *preline_sinfo = DATA_PTR(preline_v);
-  struct timespec tp;
-
-  sinfo_expand_scoring_sinfo(scoring_sinfo, line);
-  sinfo_expand_process_sinfo(process_sinfo, line);
-  sinfo_expand_preline_sinfo(preline_sinfo, line);
-
-  clock_gettime(CLOCK_MONOTONIC, &tp);
-  __sinfo_measure(scoring_sinfo, process_sinfo, preline_sinfo, line, tp);
 }
 
 static void pline_sinfo_init(void)
