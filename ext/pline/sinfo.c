@@ -203,11 +203,9 @@ static void __sinfo_measure(pline_src_info_t *scoring_sinfo, pline_src_info_t *p
 {
   pline_time_t t;
   long i, cidx, pidx;
-  pline_line_info_t *clinfo;
 
   cidx = line2idx(line);
-  clinfo = &process_sinfo->lines[cidx];
-  pidx = clinfo->prev;
+  pidx = process_sinfo->lines[cidx].prev;
 
   if (pidx < 0) {
     for (i = cidx - 1; i >= 0; i--) {
@@ -218,11 +216,11 @@ static void __sinfo_measure(pline_src_info_t *scoring_sinfo, pline_src_info_t *p
     }
   }
 
-  clinfo->start = ((pline_time_t)tp.tv_sec)*1000*1000*1000 + ((pline_time_t)tp.tv_nsec);
+  process_sinfo->lines[cidx].start = ((pline_time_t)tp.tv_sec)*1000*1000*1000 + ((pline_time_t)tp.tv_nsec);
   if (pidx >= 0) {
     pline_line_info_t *plinfo = &process_sinfo->lines[pidx];
     if (has_value(plinfo->start)) {
-      plinfo->score += (clinfo->start - plinfo->start);
+      plinfo->score += (process_sinfo->lines[cidx].start - plinfo->start);
       plinfo->start = NOVALUE;
     }
   }
