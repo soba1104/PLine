@@ -131,19 +131,16 @@ static VALUE sinfo_find(st_table *sinfo_table, const char *s)
   }
 }
 
-static VALUE sinfo_find_process_sinfo_force(const char *s)
+static void sinfo_allocate_lines(pline_src_info_t *sinfo, long line)
 {
-  VALUE sinfo = sinfo_find(process_sinfo_table, s);
-
-  if (!RTEST(sinfo)) {
-    sinfo = rb_funcall(cSourceInfo, rb_intern("new"), 0);
-    rb_gc_register_mark_object(sinfo);
-    st_insert(process_sinfo_table, (st_data_t)s, (st_data_t)sinfo);
+  if (sinfo->lines) {
+    REALLOC_N(sinfo->lines, pline_line_info_t, line);
+  } else {
+    sinfo->lines = ALLOC_N(pline_line_info_t, line);
   }
-
-  return sinfo;
 }
 
+/* for scoring */
 static VALUE sinfo_find_scoring_sinfo_force(const char *s)
 {
   VALUE sinfo = sinfo_find(scoring_sinfo_table, s);
@@ -155,39 +152,6 @@ static VALUE sinfo_find_scoring_sinfo_force(const char *s)
   }
 
   return sinfo;
-}
-
-static VALUE sinfo_find_preline_sinfo_force(const char *s)
-{
-  VALUE sinfo = sinfo_find(preline_sinfo_table, s);
-
-  if (!RTEST(sinfo)) {
-    sinfo = rb_funcall(cSourceInfo, rb_intern("new"), 0);
-    rb_gc_register_mark_object(sinfo);
-    st_insert(preline_sinfo_table, (st_data_t)s, (st_data_t)sinfo);
-  }
-
-  return sinfo;
-}
-
-static VALUE sinfo_s_find(VALUE self, VALUE path)
-{
-  VALUE sinfo;
-
-  if (TYPE(path) != T_STRING) {
-    rb_raise(rb_eArgError, "invalid argument");
-  }
-
-  return sinfo_find(scoring_sinfo_table, RSTRING_PTR(path));
-}
-
-static void sinfo_allocate_lines(pline_src_info_t *sinfo, long line)
-{
-  if (sinfo->lines) {
-    REALLOC_N(sinfo->lines, pline_line_info_t, line);
-  } else {
-    sinfo->lines = ALLOC_N(pline_line_info_t, line);
-  }
 }
 
 static void sinfo_expand_scoring_sinfo(pline_src_info_t *sinfo, long line)
@@ -203,6 +167,31 @@ static void sinfo_expand_scoring_sinfo(pline_src_info_t *sinfo, long line)
   }
 }
 
+static VALUE sinfo_s_find(VALUE self, VALUE path)
+{
+  VALUE sinfo;
+
+  if (TYPE(path) != T_STRING) {
+    rb_raise(rb_eArgError, "invalid argument");
+  }
+
+  return sinfo_find(scoring_sinfo_table, RSTRING_PTR(path));
+}
+
+/* for processing */
+static VALUE sinfo_find_process_sinfo_force(const char *s)
+{
+  VALUE sinfo = sinfo_find(process_sinfo_table, s);
+
+  if (!RTEST(sinfo)) {
+    sinfo = rb_funcall(cSourceInfo, rb_intern("new"), 0);
+    rb_gc_register_mark_object(sinfo);
+    st_insert(process_sinfo_table, (st_data_t)s, (st_data_t)sinfo);
+  }
+
+  return sinfo;
+}
+
 static void sinfo_expand_process_sinfo(pline_src_info_t *sinfo, long line)
 {
   long i;
@@ -214,6 +203,20 @@ static void sinfo_expand_process_sinfo(pline_src_info_t *sinfo, long line)
     }
     sinfo->size = line;
   }
+}
+
+/* for previous line search */
+static VALUE sinfo_find_preline_sinfo_force(const char *s)
+{
+  VALUE sinfo = sinfo_find(preline_sinfo_table, s);
+
+  if (!RTEST(sinfo)) {
+    sinfo = rb_funcall(cSourceInfo, rb_intern("new"), 0);
+    rb_gc_register_mark_object(sinfo);
+    st_insert(preline_sinfo_table, (st_data_t)s, (st_data_t)sinfo);
+  }
+
+  return sinfo;
 }
 
 static void sinfo_expand_preline_sinfo(pline_src_info_t *sinfo, long line)
@@ -229,6 +232,7 @@ static void sinfo_expand_preline_sinfo(pline_src_info_t *sinfo, long line)
   }
 }
 
+/* measurement using sinfo */
 static void __sinfo_measure(pline_src_info_t *scoring_sinfo, pline_src_info_t *process_sinfo, pline_src_info_t *preline_sinfo, long line, struct timespec tp)
 {
   pline_time_t t;
