@@ -33,6 +33,8 @@ module PLine
       @@time_label = :sec
     end
 
+    private
+
     def build_message(desc, labels, contents, align, pretty = true)
       results = []
       l_desc = desc.length

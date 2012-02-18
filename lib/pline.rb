@@ -6,7 +6,6 @@ require 'pline/summarize'
 module PLine
   extend PLine::Util
   extend PLine::Summarize
+  at_exit{summarize}
 end
-
-at_exit{PLine.summarize()}
 
