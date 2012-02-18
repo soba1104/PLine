@@ -33,7 +33,7 @@ module PLine
       @@time_label = :sec
     end
 
-    def build_message(desc, labels, contents, pretty = true)
+    def build_message(desc, labels, contents, align, pretty = true)
       results = []
       l_desc = desc.length
       column_size = labels.size
@@ -83,7 +83,10 @@ module PLine
         side = ""
       end
       contents.each do |line|
-        results << "#{side} #{line.zip(l_labels).map{|c, l| pretty ? c.ljust(l) : c }.join(" | ")} #{side}"
+        center = line.zip(l_labels).zip(align).map{|(c, l), m|
+          pretty ? c.__send__(m, l) : c
+        }.join(" | ")
+        results << "#{side} #{center} #{side}"
       end
       results << " #{sep} "
       results.map{|s| s.force_encoding('ASCII-8BIT')}.join("\n")
@@ -97,6 +100,7 @@ module PLine
         minfos << m
       end
       labels = ["Line", "Time(#{@@time_label})", "Source"]
+      align  = [:rjust, :rjust, :ljust]
       files.each do |spath, minfos|
         sinfo = SourceInfo.find(spath)
         next unless sinfo
@@ -111,7 +115,7 @@ module PLine
           end
           @@output.puts()
           desc = "   #{m.description}   "
-          msg = build_message(desc, labels, contents)
+          msg = build_message(desc, labels, contents, align)
           @@output.puts(msg)
         end
       end
