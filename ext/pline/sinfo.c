@@ -1,5 +1,4 @@
 static st_table *scoring_sinfo_table;
-static st_table *process_sinfo_table;
 static st_table *preline_sinfo_table;
 
 typedef long long int pline_time_t;
@@ -10,11 +9,19 @@ typedef struct pline_sinfo_container {
 } pline_sinfo_container_t;
 static ID sinfo_container_id;
 
+static int sinfo_container_mark_i(st_data_t key, st_data_t value, st_data_t arg)
+{
+  VALUE sinfo = (VALUE)value;
+  rb_gc_mark(sinfo);
+  return ST_CONTINUE;
+}
+
 static void sinfo_container_mark(void *p)
 {
   pline_sinfo_container_t *s = p;
 
   if (!s) return;
+  st_foreach(s->sinfo_table, sinfo_container_mark_i, 0);
 }
 
 static void sinfo_container_free(void *p)
@@ -43,7 +50,7 @@ static VALUE sinfo_container_s_alloc(VALUE klass)
   return obj;
 }
 
-static st_table* sinfo_container_current_sinfo_table(void)
+static st_table* sinfo_container_process_sinfo_table(void)
 {
   VALUE scon, thval = rb_thread_current();
   pline_sinfo_container_t *s;
@@ -181,11 +188,11 @@ static VALUE sinfo_s_find(VALUE self, VALUE path)
 /* for processing */
 static VALUE sinfo_find_process_sinfo_force(const char *s)
 {
+  st_table *process_sinfo_table = sinfo_container_process_sinfo_table();
   VALUE sinfo = sinfo_find(process_sinfo_table, s);
 
   if (!RTEST(sinfo)) {
     sinfo = rb_funcall(cSourceInfo, rb_intern("new"), 0);
-    rb_gc_register_mark_object(sinfo);
     st_insert(process_sinfo_table, (st_data_t)s, (st_data_t)sinfo);
   }
 
@@ -289,7 +296,6 @@ static void pline_sinfo_init(void)
   rb_define_alloc_func(cSourceInfoContainer, sinfo_container_s_alloc);
   sinfo_container_id = rb_intern("__pline_sinfo_container");
   scoring_sinfo_table = st_init_strtable();
-  process_sinfo_table = st_init_strtable();
   preline_sinfo_table = st_init_strtable();
 }
 
