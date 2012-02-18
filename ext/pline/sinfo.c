@@ -153,6 +153,26 @@ static VALUE sinfo_s_find(VALUE self, VALUE path)
   return sinfo_find(pline_table, RSTRING_PTR(path));
 }
 
+static void sinfo_expand(pline_src_info_t *sinfo, long line)
+{
+  long i;
+
+  if (sinfo->size < line) {
+    if (sinfo->lines) {
+      REALLOC_N(sinfo->lines, pline_line_info_t, line);
+    } else {
+      sinfo->lines = ALLOC_N(pline_line_info_t, line);
+    }
+    for (i = sinfo->size; i < line; i++) {
+      pline_line_info_t *linfo = &sinfo->lines[i];
+      linfo->score = 0;
+      linfo->start = NOVALUE;
+      linfo->prev  = -1;
+    }
+    sinfo->size = line;
+  }
+}
+
 static void __sinfo_measure(pline_src_info_t *sinfo, long line, struct timespec tp)
 {
   pline_time_t t;
@@ -187,22 +207,8 @@ static void sinfo_measure(const char *srcfile, long line)
   VALUE v = sinfo_find_current_force(srcfile);
   pline_src_info_t *sinfo = DATA_PTR(v);
   struct timespec tp;
-  long i;
 
-  if (sinfo->size < line) {
-    if (sinfo->lines) {
-      REALLOC_N(sinfo->lines, pline_line_info_t, line);
-    } else {
-      sinfo->lines = ALLOC_N(pline_line_info_t, line);
-    }
-    for (i = sinfo->size; i < line; i++) {
-      pline_line_info_t *linfo = &sinfo->lines[i];
-      linfo->score = 0;
-      linfo->start = NOVALUE;
-      linfo->prev  = -1;
-    }
-    sinfo->size = line;
-  }
+  sinfo_expand(sinfo, line);
 
   clock_gettime(CLOCK_MONOTONIC, &tp);
   __sinfo_measure(sinfo, line, tp);
