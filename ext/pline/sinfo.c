@@ -60,10 +60,10 @@ static st_table* sinfo_container_current_sinfo_table(void)
 
 /* pline_src_info */
 
-typedef struct pline_line_info {
+typedef union pline_line_info {
   pline_time_t score;
   pline_time_t start;
-  pline_time_t prev;
+  long prev;
 } pline_line_info_t;
 
 typedef struct pline_src_info {
@@ -133,7 +133,7 @@ static VALUE sinfo_find(st_table *sinfo_table, const char *s)
 
 static VALUE sinfo_find_process_sinfo_force(const char *s)
 {
-  VALUE sinfo = sinfo_find(scoring_sinfo_table, s);
+  VALUE sinfo = sinfo_find(process_sinfo_table, s);
 
   if (!RTEST(sinfo)) {
     sinfo = rb_funcall(cSourceInfo, rb_intern("new"), 0);
@@ -159,7 +159,7 @@ static VALUE sinfo_find_scoring_sinfo_force(const char *s)
 
 static VALUE sinfo_find_preline_sinfo_force(const char *s)
 {
-  VALUE sinfo = sinfo_find(scoring_sinfo_table, s);
+  VALUE sinfo = sinfo_find(preline_sinfo_table, s);
 
   if (!RTEST(sinfo)) {
     sinfo = rb_funcall(cSourceInfo, rb_intern("new"), 0);
@@ -197,10 +197,7 @@ static void sinfo_expand_scoring_sinfo(pline_src_info_t *sinfo, long line)
   if (sinfo->size < line) {
     sinfo_allocate_lines(sinfo, line);
     for (i = sinfo->size; i < line; i++) {
-      pline_line_info_t *linfo = &sinfo->lines[i];
-      linfo->score = 0;
-      linfo->start = NOVALUE;
-      linfo->prev  = -1;
+      sinfo->lines[i].score = 0;
     }
     sinfo->size = line;
   }
@@ -213,10 +210,7 @@ static void sinfo_expand_process_sinfo(pline_src_info_t *sinfo, long line)
   if (sinfo->size < line) {
     sinfo_allocate_lines(sinfo, line);
     for (i = sinfo->size; i < line; i++) {
-      pline_line_info_t *linfo = &sinfo->lines[i];
-      linfo->score = 0;
-      linfo->start = NOVALUE;
-      linfo->prev  = -1;
+      sinfo->lines[i].start = NOVALUE;
     }
     sinfo->size = line;
   }
@@ -229,10 +223,7 @@ static void sinfo_expand_preline_sinfo(pline_src_info_t *sinfo, long line)
   if (sinfo->size < line) {
     sinfo_allocate_lines(sinfo, line);
     for (i = sinfo->size; i < line; i++) {
-      pline_line_info_t *linfo = &sinfo->lines[i];
-      linfo->score = 0;
-      linfo->start = NOVALUE;
-      linfo->prev  = -1;
+      sinfo->lines[i].prev = -1;
     }
     sinfo->size = line;
   }
@@ -244,21 +235,23 @@ static void __sinfo_measure(pline_src_info_t *scoring_sinfo, pline_src_info_t *p
   long i, cidx, pidx;
 
   cidx = line2idx(line);
-  pidx = process_sinfo->lines[cidx].prev;
+  pidx = preline_sinfo->lines[cidx].prev;
 
   if (pidx < 0) {
     for (i = cidx - 1; i >= 0; i--) {
       if (has_value(process_sinfo->lines[i].start)) {
-        pidx = process_sinfo->lines[cidx].prev = i;
+        pidx = preline_sinfo->lines[cidx].prev = i;
         break;
       }
     }
   }
 
-  process_sinfo->lines[cidx].start = ((pline_time_t)tp.tv_sec)*1000*1000*1000 + ((pline_time_t)tp.tv_nsec);
+  t = ((pline_time_t)tp.tv_sec)*1000*1000*1000 + ((pline_time_t)tp.tv_nsec);
+  process_sinfo->lines[cidx].start = t;
   if (pidx >= 0) {
     if (has_value(process_sinfo->lines[pidx].start)) {
-      process_sinfo->lines[pidx].score += (process_sinfo->lines[cidx].start - process_sinfo->lines[pidx].start);
+      pline_time_t s = process_sinfo->lines[pidx].start;
+      scoring_sinfo->lines[pidx].score += (t - s);
       process_sinfo->lines[pidx].start = NOVALUE;
     }
   }
@@ -274,9 +267,9 @@ static void sinfo_measure(const char *srcfile, long line)
   pline_src_info_t *preline_sinfo = DATA_PTR(preline_v);
   struct timespec tp;
 
-  sinfo_expand(scoring_sinfo, line);
-  sinfo_expand(process_sinfo, line);
-  sinfo_expand(preline_sinfo, line);
+  sinfo_expand_scoring_sinfo(scoring_sinfo, line);
+  sinfo_expand_process_sinfo(process_sinfo, line);
+  sinfo_expand_preline_sinfo(preline_sinfo, line);
 
   clock_gettime(CLOCK_MONOTONIC, &tp);
   __sinfo_measure(scoring_sinfo, process_sinfo, preline_sinfo, line, tp);
