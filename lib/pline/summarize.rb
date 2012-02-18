@@ -6,6 +6,33 @@ module PLine
       @@output = io
     end
 
+    DIVISOR_NSEC = 1
+    DIVISOR_USEC = DIVISOR_NSEC * 1000
+    DIVISOR_MSEC = DIVISOR_USEC * 1000
+    DIVISOR_SEC  = DIVISOR_MSEC * 1000
+    @@divisor = DIVISOR_USEC
+    @@time_label = :usec
+
+    def show_nsec()
+      @@divisor = DIVISOR_NSEC
+      @@time_label = :nsec
+    end
+
+    def show_usec()
+      @@divisor = DIVISOR_USEC
+      @@time_label = :usec
+    end
+
+    def show_msec()
+      @@divisor = DIVISOR_MSEC
+      @@time_label = :msec
+    end
+
+    def show_sec()
+      @@divisor = DIVISOR_SEC
+      @@time_label = :sec
+    end
+
     def build_message(desc, labels, contents, pretty = true)
       results = []
       l_desc = desc.length
@@ -69,7 +96,7 @@ module PLine
         minfos = files[m.spath] ||= []
         minfos << m
       end
-      labels = ["Line", "Time(usec)", "Source"]
+      labels = ["Line", "Time(#{@@time_label})", "Source"]
       files.each do |spath, minfos|
         sinfo = SourceInfo.find(spath)
         next unless sinfo
@@ -80,7 +107,7 @@ module PLine
           next if lines.size < m.eline
           lines[(m.sline - 1)..(m.eline - 1)].each_with_index do |t, idx|
             line = m.sline + idx
-            contents << [line.to_s, (t / 1000).to_s, source[line - 1]]
+            contents << [line.to_s, (t / @@divisor).to_s, source[line - 1]]
           end
           @@output.puts()
           desc = "   #{m.description}   "
