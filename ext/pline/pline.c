@@ -1,8 +1,5 @@
 #include <ruby.h>
 
-#include <time.h>
-#include <sys/time.h>
-
 #include "ruby_source/1.9.3/vm_core.h"
 #include "ruby_source/1.9.3/eval_intern.h"
 #include "ruby_source/1.9.3/iseq.h"
@@ -28,6 +25,11 @@
 
 #include "ruby_source/1.9.3/insns_info.inc"
 #include "ruby_source/1.9.3/manual_update.h"
+
+#ifndef _WIN32
+#include <time.h>
+#include <sys/time.h>
+#endif
 
 #define line2idx(l) ((l) - 1)
 #define idx2line(i) ((i) + 1)
