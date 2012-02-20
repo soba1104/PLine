@@ -22,6 +22,23 @@ HEADERS = \
   $(srcdir)/ruby_source/1.9.3/atomic.h		\
   $(srcdir)/ruby_source/1.9.3/internal.h	\
   $(srcdir)/ruby_source/1.9.3/manual_update.h	\
+  $(srcdir)/ruby_source/1.9.2/debug.h		\
+  $(srcdir)/ruby_source/1.9.2/gc.h		\
+  $(srcdir)/ruby_source/1.9.2/id.h		\
+  $(srcdir)/ruby_source/1.9.2/eval_intern.h	\
+  $(srcdir)/ruby_source/1.9.2/iseq.h		\
+  $(srcdir)/ruby_source/1.9.2/method.h		\
+  $(srcdir)/ruby_source/1.9.2/node.h		\
+  $(srcdir)/ruby_source/1.9.2/thread_pthread.h	\
+  $(srcdir)/ruby_source/1.9.2/thread_win32.h	\
+  $(srcdir)/ruby_source/1.9.2/vm_core.h		\
+  $(srcdir)/ruby_source/1.9.2/vm_exec.h		\
+  $(srcdir)/ruby_source/1.9.2/vm_insnhelper.c	\
+  $(srcdir)/ruby_source/1.9.2/vm_insnhelper.h	\
+  $(srcdir)/ruby_source/1.9.2/vm_opts.h		\
+  $(srcdir)/ruby_source/1.9.2/insns_info.inc	\
+  $(srcdir)/ruby_source/1.9.2/insns.inc		\
+  $(srcdir)/ruby_source/1.9.2/manual_update.h	\
   $(srcdir)/extconf.h
 
 $(srcdir)/pline.c:				\
