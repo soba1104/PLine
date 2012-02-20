@@ -1,0 +1,133 @@
+* About PLine
+PLine is a profiler for Ruby1.9.3.
+PLine profiles each line of Ruby method (method written in Ruby) you specified.
+Using PLine, you can profile each line of Ruby method easily.
+
+This README document introduces basic functionality of PLine.
+If you have any questions, comments, or suggestions please send email to shiba@rvm.jp,
+or use http://github.com/soba1104/PLine/issues.
+
+
+
+* License
+Same as the license of Ruby runtime.
+
+
+
+* Installation
+$gem install pline
+
+Currently, PLine supports Ruby1.9.3 only.
+So, if you want to use PLine, please install PLine under Ruby1.9.3 runtime. 
+
+
+
+* Usage
+############### sample code ###############
+require 'pline'
+
+# Target method of profiling
+def sum(a, b)
+  a + b
+end
+
+# Specify unit of measurement to PLine
+PLine.show_msec()
+
+# Specify profiling to PLine
+PLine.profile(self, :sum, true)
+
+1000000.times{|i| sum(i, i)}
+
+################## result ##################
+ -----------------------------------------
+|     main.sum: tmp/sample.rb(4 - 6)      |
+|-----------------------------------------|
+|  Line  |  Time(msec)  |     Source      |
+|-----------------------------------------|
+|      4 |            0 | def sum(a, b)   |
+|      5 |          625 |   a + b         | < You can know that 'a + b' takes 625 micro seconds.
+|      6 |            0 | end             |
+ -----------------------------------------
+  
+
+
+* Attention
+Currently, PLine is alpha version. So, you must not use PLine in critical mission.
+This section introduces some attentions about PLine.
+
+** Recursive call profiling
+PLine cannot profile recursive call statements correctly.
+Profiling results of recursive call statements may become short.
+
+** Block invocation profiling
+PLine cannot profile exit points of block invocation.
+Profiling results of exit points of block invocation may become significantly short.
+
+------------------------ example ------------------------
+# sample code
+require 'pline'
+
+def foo
+  sum = 0
+  100000.times{|i|
+    sum += i
+    sum += i
+  }
+  sum
+end
+
+PLine.profile(self, :foo, true)
+foo()
+
+# result
+ ----------------------------------------
+|     main.foo: tmp/test2.rb(3 - 10)     |
+|----------------------------------------|
+| Line | Time(usec) |       Source       |
+|----------------------------------------|
+|    3 |          0 | def foo            |
+|    4 |          2 |   sum = 0          |
+|    5 |          2 |   100000.times{|i| |
+|    6 |      81190 |     sum += i       |
+|    7 |          3 |     sum += i       | <= this
+|    8 |          0 |   }                |
+|    9 |          1 |   sum              |
+|   10 |          0 | end                |
+ ----------------------------------------
+---------------------------------------------------------
+
+** Using together with other profiler
+PLine rewrites RUBY_EVENT_LINE event to RUBY_EVENT_END event.
+So, when you use PLine, above events become incompatible.
+You should not use PLine together with other profilers which use above events.
+
+
+
+* PLine APIs
+This section introduces PLine APIs.
+
+** A API of specifying profiling
+- PLine.profile(object, method_id, singleton_p = false)
+Specify profiling to PLine.
+When singleton_p argument(third argument) is false, PLine searches object#method_id (instance method).
+Otherwise, PLine searches object.method_id (singleton_method).
+
+** APIs of specifying output
+- PLine.output=(io)
+Specify output io object.
+Default output of PLine is STDERR.
+
+- PLine.show_sec()
+Specify sec as the unit of measurement.
+
+- PLine.show_msec()
+Specify millisec as the unit of measurement.
+
+- PLine.show_usec()
+Specify microsec as the unit of measurement.
+Microsec is the default unit of measurement.
+
+- PLine.show_nsec()
+Specify nanosec as the unit of measurement.
+
