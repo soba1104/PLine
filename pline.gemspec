@@ -4,8 +4,9 @@ Gem::Specification.new do |spec|
   spec.platform		      = Gem::Platform::RUBY
   spec.summary		      = "Performance Profiler for Ruby1.9.3 and Ruby1.9.2"
   spec.description	      = <<-EOS
-PLine is a performance profiler for Ruby1.9.3 and Ruby1.9.2.
-
+PLine is a profiler for Ruby1.9.3.
+PLine profiles each line of Ruby method (method written in Ruby) you specified.
+Using PLine, you can profile each line of Ruby method easily.
   EOS
   spec.files		      = Dir['{lib/**/*,ext/**/*}'] + %w[
 				  pline.gemspec
