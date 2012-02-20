@@ -20,7 +20,7 @@ PLine is a performance profiler for Ruby1.9.3.
   #spec.test_files	      = Dir['test/*']
   spec.author		      = 'Satoshi Shiba'
   spec.email		      = 'shiba@rvm.jp'
-  #spec.homepage		      = 'http://github.com/soba1104/pline'
+  spec.homepage		      = 'https://github.com/soba1104/PLine'
   #spec.rubyforge_project     = 'pline'
   #spec.required_ruby_version  = '= 1.9.3'
   spec.required_ruby_version  = '>= 1.9.3'
