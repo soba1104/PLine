@@ -1,5 +1,5 @@
 * About PLine
-PLine is a profiler for Ruby1.9.3.
+PLine is a profiler for Ruby1.9.3 and Ruby1.9.2.
 PLine profiles each line of Ruby method (method written in Ruby) you specified.
 Using PLine, you can profile each line of Ruby method easily.
 
@@ -17,8 +17,9 @@ Same as the license of Ruby runtime.
 * Installation
 $gem install pline
 
-Currently, PLine supports Ruby1.9.3 only.
-So, if you want to use PLine, please install PLine under Ruby1.9.3 runtime. 
+Currently, PLine supports Ruby1.9.3 and Ruby1.9.2 only.
+So, if you want to use PLine, please install PLine
+under Ruby1.9.3 or Ruby1.9.2 runtime. 
 
 
 
