@@ -4,7 +4,7 @@ PLine profiles each line of Ruby method (method written in Ruby) you specified.
 Using PLine, you can profile each line of Ruby method easily.
 
 This README document introduces basic functionality of PLine.
-If you have any questions, comments, or suggestions please send email to shiba@rvm.jp,
+If you have any questions or comments, please send email to shiba@rvm.jp,
 or use http://github.com/soba1104/PLine/issues.
 
 
@@ -46,8 +46,8 @@ PLine.profile(self, :sum, true)
 |  Line  |  Time(msec)  |     Source      |
 |-----------------------------------------|
 |      4 |            0 | def sum(a, b)   |
-|      5 |          625 |   a + b         | < You can know that 'a + b' takes 625 micro seconds.
-|      6 |            0 | end             |
+|      5 |          625 |   a + b         | < You can know that 
+|      6 |            0 | end             |   'a + b' takes 625 microseconds.
  -----------------------------------------
   
 
