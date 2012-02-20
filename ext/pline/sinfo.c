@@ -1,7 +1,7 @@
 static st_table *scoring_sinfo_table;
 static st_table *preline_sinfo_table;
 
-typedef long long int pline_time_t;
+typedef unsigned long long int pline_time_t;
 
 /* pline_sinfo_container */
 typedef struct pline_sinfo_container {

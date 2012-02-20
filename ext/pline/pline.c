@@ -34,8 +34,8 @@
 #define line2idx(l) ((l) - 1)
 #define idx2line(i) ((i) + 1)
 #define nano2micro(t) (((t) / 1000))
-#define has_value(v) (v > 0)
-#define NOVALUE -1
+#define NOVALUE 0
+#define has_value(v) ((v) != NOVALUE)
 
 static VALUE mPLine, cSourceInfo, cMethodInfo, cSourceInfoContainer;
 
