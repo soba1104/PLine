@@ -239,6 +239,25 @@ static void sinfo_expand_preline_sinfo(pline_src_info_t *sinfo, long line)
   }
 }
 
+static pline_time_t sinfo_measure_time(void)
+{
+  pline_time_t t;
+
+#ifdef _WIN32
+  FILETIME ft;
+
+  GetSystemTimeAsFileTime(&ft);
+  t = (((pline_time_t)ft.dwHighDateTime << 32) | (pline_time_t)ft.dwLowDateTime) * 100;
+#else
+  struct timespec ts;
+
+  clock_gettime(CLOCK_REALTIME, &ts);
+  t = ((pline_time_t)ts.tv_sec)*1000*1000*1000 + ((pline_time_t)ts.tv_nsec);
+#endif
+
+  return t;
+}
+
 /* measurement using sinfo */
 static void sinfo_measure(const char *srcfile, long line)
 {
@@ -248,15 +267,12 @@ static void sinfo_measure(const char *srcfile, long line)
   pline_src_info_t *scoring_sinfo = DATA_PTR(scoring_v);
   pline_src_info_t *process_sinfo = DATA_PTR(process_v);
   pline_src_info_t *preline_sinfo = DATA_PTR(preline_v);
-  struct timespec tp;
   long i, cidx, pidx;
   pline_time_t t;
 
   sinfo_expand_scoring_sinfo(scoring_sinfo, line);
   sinfo_expand_process_sinfo(process_sinfo, line);
   sinfo_expand_preline_sinfo(preline_sinfo, line);
-
-  clock_gettime(CLOCK_MONOTONIC, &tp);
 
   cidx = line2idx(line);
   pidx = preline_sinfo->lines[cidx].prev;
@@ -269,7 +285,7 @@ static void sinfo_measure(const char *srcfile, long line)
     }
   }
 
-  t = ((pline_time_t)tp.tv_sec)*1000*1000*1000 + ((pline_time_t)tp.tv_nsec);
+  t = sinfo_measure_time();
   process_sinfo->lines[cidx].start = t;
   if (pidx >= 0) {
     if (has_value(process_sinfo->lines[pidx].start)) {
