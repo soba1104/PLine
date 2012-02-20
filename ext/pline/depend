@@ -24,6 +24,10 @@ HEADERS = \
   $(srcdir)/ruby_source/1.9.3/manual_update.h	\
   $(srcdir)/extconf.h
 
+$(srcdir)/pline.c:				\
+  $(srcdir)/pline.c.rb
+	$(RUBY) -- $(srcdir)/pline.c.rb > $@
+
 $(srcdir)/pline.o:				\
   $(HEADERS)                                    \
   $(srcdir)/profiler.c                          \
