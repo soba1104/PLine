@@ -1,3 +1,7 @@
+#ifdef __MACH__
+#include <mach/clock.h>
+#include <mach/mach.h>
+#endif
 static st_table *scoring_sinfo_table;
 static st_table *preline_sinfo_table;
 
@@ -249,9 +253,16 @@ static pline_time_t sinfo_measure_time(void)
   GetSystemTimeAsFileTime(&ft);
   t = (((pline_time_t)ft.dwHighDateTime << 32) | (pline_time_t)ft.dwLowDateTime) * 100;
 #else
+#ifdef __MACH__
+  clock_serv_t cclock;
+  mach_timespec_t ts;
+  host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
+  clock_get_time(cclock, &ts);
+  mach_port_deallocate(mach_task_self(), cclock);
+#else
   struct timespec ts;
-
   clock_gettime(CLOCK_REALTIME, &ts);
+#endif
   t = ((pline_time_t)ts.tv_sec)*1000*1000*1000 + ((pline_time_t)ts.tv_nsec);
 #endif
 
